@@ -7,3 +7,7 @@ coverage/
 .env.local
 betterfront-report.html
 betterfront-summary.json
+betterfront-artifacts/
+tests/test-artifacts/
+tests/test-report.html
+tests/test-summary.json

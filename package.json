@@ -2,12 +2,17 @@
   "name": "betterfront",
   "version": "1.0.0",
   "description": "Gold-Standard Autonomous Frontend QA & Production Readiness Engine",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "betterfront": "./bin/betterfront.js"
+  },
   "scripts": {
     "build": "tsc",
-    "audit": "node dist/cli.js",
-    "poc": "node poc-audit.js"
+    "audit": "node dist/cli.js audit",
+    "explore": "node dist/cli.js explore",
+    "test": "node --test tests/audit.test.js"
   },
   "keywords": [
     "frontend-testing",
@@ -18,7 +23,9 @@
     "layout-shift",
     "lighthouse",
     "playwright",
-    "autonomous-agent"
+    "autonomous-agent",
+    "video-recording",
+    "flight-recorder"
   ],
   "author": "BetterFront Team",
   "license": "MIT",

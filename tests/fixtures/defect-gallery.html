@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BetterFront Test Fixture - Defect Gallery</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+    header {
+      background: #0f172a;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* DEFECT 1: Text-on-Text Collision Bug */
+    .collision-container {
+      position: relative;
+      height: 60px;
+      background: #fff1f2;
+      border: 1px dashed #f43f5e;
+      padding: 10px;
+    }
+    .colliding-text-a {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #be123c;
+    }
+    .colliding-text-b {
+      position: absolute;
+      top: 18px;
+      left: 30px;
+      font-size: 18px;
+      color: #1d4ed8;
+      background: transparent;
+    }
+
+    /* DEFECT 2: Mobile Horizontal Overflow / Viewport Bleed Bug */
+    .overflow-mobile-bug {
+      width: 520px;
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    /* DEFECT 3: Text Clipping / Container Starvation Bug */
+    .starved-clipped-card {
+      height: 24px;
+      overflow: hidden;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 4px 8px;
+      font-size: 16px;
+      line-height: 24px;
+      margin-top: 10px;
+    }
+
+    /* DEFECT 4: Undersized Touch Target (< 44px) */
+    .tiny-action-btn {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      font-size: 10px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    /* VALID INTENTIONAL DESIGN PATTERN: Avatar Stack */
+    .avatar-stack {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #3b82f6;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      border: 2px solid white;
+      margin-left: -12px;
+    }
+    .avatar:first-child { margin-left: 0; }
+
+    /* Interactive Form */
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .form-group input {
+      width: 100%;
+      max-width: 300px;
+      padding: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+    }
+    .submit-btn {
+      padding: 12px 24px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BetterFront Test Laboratory</h1>
+    <p>This page contains simulated frontend edge cases and visual defects for audit verification.</p>
+  </header>
+
+  <!-- DEFECT 1: Text Collision -->
+  <div class="section">
+    <h2>1. Text Collision Anomaly</h2>
+    <div class="collision-container">
+      <div class="colliding-text-a">Critical Production Header Text</div>
+      <div class="colliding-text-b">Colliding Subtitle Banner</div>
+    </div>
+  </div>
+
+  <!-- DEFECT 2: Horizontal Mobile Bleed -->
+  <div class="section">
+    <h2>2. Mobile Horizontal Bleed (Fixed 520px Container)</h2>
+    <div class="overflow-mobile-bug">
+      This box has a hardcoded width of 520px. On 375px or 390px mobile screens, it causes sideways page wobble!
+    </div>
+  </div>
+
+  <!-- DEFECT 3: Container Clipping -->
+  <div class="section">
+    <h2>3. Text Clipping & Starvation</h2>
+    <div class="starved-clipped-card">
+      First line of text.<br>
+      Second line of text that gets clipped off by fixed 24px container height!
+    </div>
+  </div>
+
+  <!-- DEFECT 4: Touch Target Size -->
+  <div class="section">
+    <h2>4. Undersized Touch Target</h2>
+    <p>This button is only 18x18px (violates WCAG 44x44px minimum):</p>
+    <button class="tiny-action-btn" id="delete-btn" aria-label="Delete">✕</button>
+  </div>
+
+  <!-- VALID PATTERN: Avatar Stack -->
+  <div class="section">
+    <h2>5. Intentional Pattern: Avatar Stack (Should NOT be flagged as bug)</h2>
+    <div class="avatar-stack">
+      <div class="avatar user-img">JD</div>
+      <div class="avatar user-img">AS</div>
+      <div class="avatar user-img">MR</div>
+    </div>
+  </div>
+
+  <!-- Real-time Layout Shift Simulation -->
+  <div class="section" id="shift-container">
+    <h2>6. Layout Shift (CLS) Simulation</h2>
+    <div id="dynamic-ad-slot"></div>
+    <button class="submit-btn" id="cta-button">Instant Action Button</button>
+  </div>
+
+  <!-- Interactive Form -->
+  <div class="section">
+    <h2>7. Interactive User Form</h2>
+    <form id="contact-form" onsubmit="event.preventDefault(); document.getElementById('form-feedback').textContent = 'Form submitted successfully!';">
+      <div class="form-group">
+        <label for="user-email">Email Address</label>
+        <input type="email" id="user-email" name="email" placeholder="you@company.com" required>
+      </div>
+      <div class="form-group">
+        <label for="user-name">Full Name</label>
+        <input type="text" id="user-name" name="fullName" placeholder="Jane Doe" required>
+      </div>
+      <button type="submit" class="submit-btn" id="submit-form-btn">Submit Form</button>
+      <p id="form-feedback" style="color: #059669; font-weight: bold; margin-top: 8px;"></p>
+    </form>
+  </div>
+
+  <script>
+    // Simulate an unprovoked layout shift after 400ms (late dynamic banner injection)
+    setTimeout(() => {
+      const slot = document.getElementById('dynamic-ad-slot');
+      if (slot) {
+        const banner = document.createElement('div');
+        banner.id = 'late-announcement-banner';
+        banner.style.cssText = 'height: 80px; background: #e0f2fe; border: 1px solid #7dd3fc; margin-bottom: 12px; padding: 10px; border-radius: 4px;';
+        banner.textContent = '🎉 Dynamic Announcement inserted late without reserved placeholder!';
+        slot.appendChild(banner);
+      }
+    }, 400);
+  </script>
+</body>
+</html>
