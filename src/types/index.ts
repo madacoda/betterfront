@@ -214,6 +214,7 @@ export interface AnomalyToggles {
   textOverlap: boolean;
   horizontalBleed: boolean;
   containerClipping: boolean;
+  interactiveOcclusion?: boolean;
   unsizedMedia: boolean;
   lowContrast: boolean;
 
@@ -295,17 +296,44 @@ export interface BetterFrontConfig {
 // -------------------------------------------------------------
 
 export type UatActionType = 
+  // Navigation & Page Lifecycle
   | 'GOTO'
-  | 'CLICK'
-  | 'TYPE'
-  | 'SCROLL'
+  | 'RELOAD'
   | 'WAIT'
+  | 'WAIT_FOR'
+  | 'WAIT_FOR_NAV'
+  // User Interactions
+  | 'CLICK'
+  | 'DOUBLE_CLICK'
+  | 'HOVER'
+  | 'TYPE'
+  | 'CLEAR'
+  | 'PRESS_KEY'
+  | 'SELECT'
+  | 'CHECK'
+  | 'UNCHECK'
+  | 'SCROLL'
+  | 'SCROLL_TO'
   | 'FILL_FORM'
+  | 'EXECUTE_SCRIPT'
+  // Assertions & Quality Checks
   | 'ASSERT_TEXT'
   | 'ASSERT_VISIBLE'
+  | 'ASSERT_HIDDEN'
+  | 'ASSERT_NOT_VISIBLE'
+  | 'ASSERT_VALUE'
+  | 'ASSERT_COUNT'
+  | 'ASSERT_URL'
+  | 'ASSERT_TITLE'
   | 'ASSERT_NO_OVERLAP'
   | 'ASSERT_NO_BLEED'
-  | 'ASSERT_NO_CONSOLE_ERRORS';
+  | 'ASSERT_NO_CONSOLE_ERRORS'
+  | 'ASSERT_UNOCCLUDED'
+  | 'ASSERT_NO_CLIPPING'
+  | 'ASSERT_TOUCH_TARGET'
+  | 'ASSERT_CONTRAST'
+  // Forensics & Diagnostics
+  | 'SCREENSHOT';
 
 export interface UatStep {
   action: UatActionType;
@@ -313,17 +341,44 @@ export interface UatStep {
   selector?: string;
   url?: string;
   text?: string;
+  value?: string;
+  key?: string;
+  state?: 'visible' | 'hidden' | 'attached' | 'detached';
+  count?: number;
+  operator?: 'equals' | 'greaterThan' | 'lessThan';
+  exact?: boolean;
+  clearFirst?: boolean;
+  pressEnter?: boolean;
+  delayMs?: number;
   scrollPx?: number;
+  direction?: 'down' | 'up';
   waitMs?: number;
-  profile?: 'GUEST_CHECKOUT' | 'CONTACT_FORM' | 'SIGNUP' | 'SEARCH';
+  timeoutMs?: number;
+  minPx?: number;
+  minRatio?: number;
+  profile?: 'GUEST_CHECKOUT' | 'CONTACT_FORM' | 'SIGNUP' | 'SEARCH' | 'CUSTOM';
+  name?: string;
+  fullPage?: boolean;
+  script?: string;
+  optional?: boolean;
+}
+
+export interface UatRecordingOptions {
+  video?: boolean;
+  trace?: boolean;
+  screenshotOnFailure?: boolean;
+  artifactsDir?: string;
 }
 
 export interface UatScenario {
+  $schema?: string;
   name: string;
   description: string;
   startUrl: string;
+  baseUrl?: string;
   viewports?: string[];
   anomalyChecks?: Partial<AnomalyToggles>;
+  recording?: UatRecordingOptions;
   steps: UatStep[];
 }
 
@@ -333,16 +388,26 @@ export interface UatStepResult {
   description: string;
   passed: boolean;
   durationMs: number;
+  optional?: boolean;
+  warning?: string;
   error?: string;
   anomaliesDetected?: VisualDefect[];
+  screenshotPath?: string;
+  failureScreenshotPath?: string;
 }
 
 export interface UatRunResult {
   scenarioName: string;
+  viewportName?: string;
   passed: boolean;
   totalSteps: number;
   passedSteps: number;
   failedSteps: number;
   durationMs: number;
   steps: UatStepResult[];
+  viewportResults?: UatRunResult[];
+  videoPath?: string;
+  tracePath?: string;
+  failureScreenshotPath?: string;
 }
+

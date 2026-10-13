@@ -33,13 +33,27 @@ export class TypistEngine {
   /**
    * Types text naturally into an input element with variable cadence and simulated typos.
    */
-  public async humanType(page: Page, selector: string, text: string, typoRate = 0.04): Promise<void> {
+  public async humanType(
+    page: Page,
+    selector: string,
+    text: string,
+    typoRate = 0.04,
+    clearFirst = true,
+    pressEnter = false
+  ): Promise<void> {
     const el = page.locator(selector).first();
-    await el.click();
+    await el.scrollIntoViewIfNeeded().catch(() => {});
+    try {
+      await el.click({ timeout: 2000 });
+    } catch {
+      await el.focus().catch(() => {});
+    }
     await new Promise((r) => setTimeout(r, 100));
 
-    // Clear existing value if any
-    await el.fill('');
+    // Clear existing value if requested
+    if (clearFirst) {
+      await el.fill('');
+    }
 
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
@@ -66,7 +80,14 @@ export class TypistEngine {
       await new Promise((r) => setTimeout(r, baseDelay));
     }
 
-    // Blur outside to trigger change/blur events
-    await page.mouse.click(10, 10);
+    // Press Enter while element is still focused if requested
+    if (pressEnter) {
+      await page.keyboard.press('Enter');
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
+    // Trigger change event and blur safely without blind clicking
+    await el.evaluate((node) => node.dispatchEvent(new Event('change', { bubbles: true }))).catch(() => {});
+    await el.blur().catch(() => {});
   }
 }

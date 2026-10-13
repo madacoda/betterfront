@@ -8,13 +8,30 @@ export interface ContextSession {
   networkErrors: NetworkAnomalyRecord[];
 }
 
+export interface BrowserPoolOptions {
+  headless?: boolean;
+  slowMo?: number;
+}
+
 export class BrowserPool {
   private browser: Browser | null = null;
+  private headless: boolean = true;
+  private slowMo: number = 0;
+
+  constructor(options?: BrowserPoolOptions) {
+    if (options?.headless !== undefined) {
+      this.headless = options.headless;
+    }
+    if (options?.slowMo !== undefined) {
+      this.slowMo = options.slowMo;
+    }
+  }
 
   public async getBrowser(): Promise<Browser> {
     if (!this.browser) {
       this.browser = await chromium.launch({
-        headless: true,
+        headless: this.headless,
+        slowMo: this.slowMo,
         args: [
           '--disable-gpu',
           '--no-sandbox',

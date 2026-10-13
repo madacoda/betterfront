@@ -1,0 +1,11 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "uat-scenarios/*.json",
+        "*uat*.json"
+      ],
+      "url": "./uat-scenarios/uat-scenario.schema.json"
+    }
+  ]
+}

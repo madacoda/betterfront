@@ -19,23 +19,34 @@ export const INJECTED_CLIPPING_SCANNER = `(() => {
     const style = window.getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden') return;
 
-    // Check if element has vertical clipping without ellipsis
-    const isOverflowHidden = style.overflowY === 'hidden' || style.overflowY === 'clip';
-    const isStarved = el.scrollHeight > el.clientHeight + 4;
+    // Check vertical starvation
+    const isOverflowYHidden = style.overflowY === 'hidden' || style.overflowY === 'clip';
+    const isStarvedY = el.scrollHeight > el.clientHeight + 4;
     const hasEllipsis = style.textOverflow === 'ellipsis';
 
-    if (isOverflowHidden && isStarved && !hasEllipsis && el.clientHeight > 0) {
+    // Check horizontal starvation
+    const isOverflowXHidden = style.overflowX === 'hidden' || style.overflowX === 'clip';
+    const isStarvedX = el.scrollWidth > el.clientWidth + 4;
+
+    const isVerticallyClipped = isOverflowYHidden && isStarvedY && !hasEllipsis && el.clientHeight > 0;
+    const isHorizontallyClipped = isOverflowXHidden && isStarvedX && el.clientWidth > 0;
+
+    if ((isVerticallyClipped || isHorizontallyClipped) && el.clientHeight > 0 && el.clientWidth > 0) {
       const rect = el.getBoundingClientRect();
       if (rect.width > 10 && rect.height > 10) {
+        const clippedPx = isVerticallyClipped ? (el.scrollHeight - el.clientHeight) : (el.scrollWidth - el.clientWidth);
         clippedElements.push({
           selector: getUniqueSelector(el),
           tagName: el.tagName.toLowerCase(),
           id: el.id || null,
           className: el.className || null,
           text: el.textContent?.trim().substring(0, 50) || '',
+          direction: isVerticallyClipped ? 'vertical' : 'horizontal',
           clientHeight: el.clientHeight,
           scrollHeight: el.scrollHeight,
-          clippedPx: el.scrollHeight - el.clientHeight,
+          clientWidth: el.clientWidth,
+          scrollWidth: el.scrollWidth,
+          clippedPx,
           rect: {
             top: Math.round(rect.top + window.scrollY),
             bottom: Math.round(rect.bottom + window.scrollY),

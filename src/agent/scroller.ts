@@ -6,8 +6,10 @@ export class ScrollerEngine {
    * pausing naturally to simulate reading based on visible text density.
    */
   public async humanScroll(page: Page, targetPixels = 600): Promise<void> {
-    const steps = Math.floor(targetPixels / 100);
-    const pixelPerStep = targetPixels / steps;
+    const direction = targetPixels >= 0 ? 1 : -1;
+    const absPixels = Math.abs(targetPixels);
+    const steps = Math.max(1, Math.floor(absPixels / 100));
+    const pixelPerStep = (absPixels / steps) * direction;
 
     for (let i = 0; i < steps; i++) {
       // Add slight jitter to step size

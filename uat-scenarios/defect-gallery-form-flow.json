@@ -1,4 +1,5 @@
 {
+  "$schema": "./uat-scenario.schema.json",
   "name": "Defect Laboratory Form Submission & Interaction Flow",
   "description": "Tests filling out the contact form, clicking the action button, and asserting runtime behavior.",
   "startUrl": "http://localhost:8912",

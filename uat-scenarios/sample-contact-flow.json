@@ -1,4 +1,5 @@
 {
+  "$schema": "./uat-scenario.schema.json",
   "name": "Example Domain Navigation & Sanity UAT Flow",
   "description": "Validates that a human user can browse Example Domain, verify body content, smooth scroll, and verify zero layout defects or console errors.",
   "startUrl": "https://example.com",

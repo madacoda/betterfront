@@ -1,0 +1,330 @@
+{
+  "$id": "https://betterfront.dev/schemas/uat-scenario.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BetterFront UAT Scenario",
+  "description": "Declarative JSON schema for authoring and validating BetterFront User Acceptance Testing (UAT) scenarios.",
+  "type": "object",
+  "required": ["name", "description", "startUrl", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path or URL to this JSON schema for IDE autocompletion and hover documentation."
+    },
+    "name": {
+      "type": "string",
+      "title": "Scenario Name",
+      "description": "Descriptive human-readable title of this UAT flow (e.g. 'Dreamblu Fantasy - Core Topbar & HUD Navigation Flow').",
+      "examples": [
+        "Dreamblu Fantasy - Core Homepage & Topbar UAT Flow",
+        "E-Commerce Guest Checkout Flow"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "title": "Scenario Description",
+      "description": "Detailed explanation of what this scenario validates and what business outcomes are verified."
+    },
+    "startUrl": {
+      "type": "string",
+      "title": "Starting URL",
+      "description": "Initial target URL navigated to at the beginning of the scenario.",
+      "examples": [
+        "http://localhost:7777",
+        "https://example.com"
+      ]
+    },
+    "baseUrl": {
+      "type": "string",
+      "title": "Base URL (Optional)",
+      "description": "Base origin used to resolve relative paths in GOTO steps (e.g. '/topbar' resolves to 'http://localhost:7777/topbar'). Defaults to startUrl."
+    },
+    "viewports": {
+      "type": "array",
+      "title": "Target Viewports",
+      "description": "List of viewport presets to execute this scenario against. If omitted, defaults to 'mobile_standard'.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "mobile_compact",
+          "mobile_standard",
+          "mobile_android",
+          "tablet_portrait",
+          "desktop_laptop",
+          "desktop_fhd",
+          "foldable"
+        ]
+      },
+      "examples": [
+        ["desktop_fhd", "mobile_standard"],
+        ["mobile_standard"]
+      ]
+    },
+    "anomalyChecks": {
+      "type": "object",
+      "title": "Anomaly Quality Gates",
+      "description": "Toggles for automated visual and runtime layout defect detection during scenario execution.",
+      "additionalProperties": false,
+      "properties": {
+        "textOverlap": {
+          "type": "boolean",
+          "description": "Detect mathematical and visual text-on-text collisions."
+        },
+        "horizontalBleed": {
+          "type": "boolean",
+          "description": "Detect mobile horizontal viewport overflow and sideways wobbling."
+        },
+        "containerClipping": {
+          "type": "boolean",
+          "description": "Detect content clipped by overflow:hidden containers without scroll."
+        },
+        "interactiveOcclusion": {
+          "type": "boolean",
+          "description": "Detect interactive elements (buttons, inputs) blocked by sticky headers or floating overlays."
+        },
+        "unsizedMedia": {
+          "type": "boolean",
+          "description": "Detect images/videos lacking width/height or aspect-ratio."
+        },
+        "lowContrast": {
+          "type": "boolean",
+          "description": "Verify WCAG 2.1 AA text contrast compliance."
+        },
+        "touchTargetSize": {
+          "type": "boolean",
+          "description": "Verify clickable buttons and links meet the 44x44px mobile touch requirement."
+        },
+        "consoleExceptions": {
+          "type": "boolean",
+          "description": "Detect unhandled JavaScript runtime exceptions and console errors."
+        },
+        "brokenLinks": {
+          "type": "boolean",
+          "description": "Detect broken links or dead anchor tags."
+        }
+      }
+    },
+    "recording": {
+      "type": "object",
+      "title": "Forensic & Motion Recording Options",
+      "description": "Configuration for video recording, Playwright trace archives, and automatic failure snapshots.",
+      "additionalProperties": false,
+      "properties": {
+        "video": {
+          "type": "boolean",
+          "title": "Record Full-Motion Video",
+          "description": "Records full-motion .webm video of the scenario execution saved to artifacts directory.",
+          "default": false
+        },
+        "trace": {
+          "type": "boolean",
+          "title": "Record Playwright Trace",
+          "description": "Records interactive Playwright trace .zip archive with DOM snapshots, network waterfall, and timeline scrubbers.",
+          "default": false
+        },
+        "screenshotOnFailure": {
+          "type": "boolean",
+          "title": "Automatic Failure Capture",
+          "description": "Automatically captures high-res screenshot with element highlight at the exact moment any step fails.",
+          "default": true
+        },
+        "artifactsDir": {
+          "type": "string",
+          "title": "Artifacts Directory",
+          "description": "Target folder for videos, traces, and screenshots. Defaults to './betterfront-artifacts'.",
+          "default": "./betterfront-artifacts"
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "title": "UAT Steps",
+      "description": "Ordered sequence of declarative actions, user interactions, and assertions.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["action"],
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Step Action",
+            "description": "The command or assertion to execute in this step.",
+            "enum": [
+              "GOTO",
+              "RELOAD",
+              "WAIT",
+              "WAIT_FOR",
+              "WAIT_FOR_NAV",
+              "CLICK",
+              "DOUBLE_CLICK",
+              "HOVER",
+              "TYPE",
+              "CLEAR",
+              "PRESS_KEY",
+              "SELECT",
+              "CHECK",
+              "UNCHECK",
+              "SCROLL",
+              "SCROLL_TO",
+              "FILL_FORM",
+              "EXECUTE_SCRIPT",
+              "ASSERT_TEXT",
+              "ASSERT_VISIBLE",
+              "ASSERT_HIDDEN",
+              "ASSERT_NOT_VISIBLE",
+              "ASSERT_VALUE",
+              "ASSERT_COUNT",
+              "ASSERT_URL",
+              "ASSERT_TITLE",
+              "ASSERT_NO_OVERLAP",
+              "ASSERT_NO_BLEED",
+              "ASSERT_NO_CONSOLE_ERRORS",
+              "ASSERT_UNOCCLUDED",
+              "ASSERT_NO_CLIPPING",
+              "ASSERT_TOUCH_TARGET",
+              "ASSERT_CONTRAST",
+              "SCREENSHOT"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "title": "Step Description",
+            "description": "Human-readable label printed in the console and test report (e.g. '1. Verify topbar navigation is visible')."
+          },
+          "selector": {
+            "type": "string",
+            "title": "Element Selector",
+            "description": "CSS selector targeting the element (e.g. 'header.site-topbar', '#submit-btn', 'button.hud-item')."
+          },
+          "url": {
+            "type": "string",
+            "title": "Target URL",
+            "description": "URL or relative path for GOTO, WAIT_FOR_NAV, or ASSERT_URL (e.g. 'http://localhost:7777', '/inventory')."
+          },
+          "text": {
+            "type": "string",
+            "title": "Text Value",
+            "description": "Text to type (for TYPE), match (for ASSERT_TEXT), or document title (for ASSERT_TITLE)."
+          },
+          "value": {
+            "type": "string",
+            "title": "Option or Input Value",
+            "description": "Value attribute for dropdown selection (SELECT) or expected value assertion (ASSERT_VALUE)."
+          },
+          "key": {
+            "type": "string",
+            "title": "Keyboard Key",
+            "description": "Keyboard key to press for PRESS_KEY (e.g. 'Enter', 'Escape', 'Tab', 'Space', 'ArrowDown')."
+          },
+          "state": {
+            "type": "string",
+            "title": "Element State",
+            "description": "Target DOM state for WAIT_FOR action.",
+            "enum": ["visible", "hidden", "attached", "detached"],
+            "default": "visible"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Element Count",
+            "description": "Expected number of matched elements for ASSERT_COUNT."
+          },
+          "operator": {
+            "type": "string",
+            "title": "Count Operator",
+            "description": "Comparison operator for ASSERT_COUNT.",
+            "enum": ["equals", "greaterThan", "lessThan"],
+            "default": "equals"
+          },
+          "exact": {
+            "type": "boolean",
+            "title": "Exact Text Match",
+            "description": "If true, ASSERT_TEXT performs strict string equality instead of substring inclusion.",
+            "default": false
+          },
+          "clearFirst": {
+            "type": "boolean",
+            "title": "Clear Input Before Typing",
+            "description": "For TYPE action: if true, clears the input before typing. Defaults to true.",
+            "default": true
+          },
+          "pressEnter": {
+            "type": "boolean",
+            "title": "Press Enter After Typing",
+            "description": "For TYPE action: if true, presses the Enter key immediately after typing.",
+            "default": false
+          },
+          "delayMs": {
+            "type": "integer",
+            "title": "Typing Delay (ms)",
+            "description": "Milliseconds delay between keystrokes for TYPE action."
+          },
+          "scrollPx": {
+            "type": "integer",
+            "title": "Scroll Distance (px)",
+            "description": "Pixel distance to scroll (positive for down, negative for up). Defaults to 500.",
+            "default": 500
+          },
+          "direction": {
+            "type": "string",
+            "title": "Scroll Direction",
+            "description": "Direction to scroll for SCROLL action.",
+            "enum": ["down", "up"],
+            "default": "down"
+          },
+          "waitMs": {
+            "type": "integer",
+            "title": "Wait Duration (ms)",
+            "description": "Duration in milliseconds to pause for WAIT action. Defaults to 1000.",
+            "default": 1000
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "title": "Step Timeout (ms)",
+            "description": "Custom maximum timeout in milliseconds for this step. Defaults to 8000ms for element lookups and 30000ms for navigation."
+          },
+          "minPx": {
+            "type": "integer",
+            "title": "Minimum Touch Target Size (px)",
+            "description": "For ASSERT_TOUCH_TARGET: minimum required width and height in pixels (defaults to 44px per Apple HIG / WCAG 2.5.5).",
+            "default": 44
+          },
+          "minRatio": {
+            "type": "number",
+            "title": "Minimum Contrast Ratio",
+            "description": "For ASSERT_CONTRAST: minimum required contrast ratio (defaults to 4.5 for WCAG 1.4.3 AA).",
+            "default": 4.5
+          },
+          "profile": {
+            "type": "string",
+            "title": "Form Filler Profile",
+            "description": "Semantic data generator profile for FILL_FORM action.",
+            "enum": ["GUEST_CHECKOUT", "CONTACT_FORM", "SIGNUP", "SEARCH", "CUSTOM"]
+          },
+          "name": {
+            "type": "string",
+            "title": "Screenshot / Artifact Name",
+            "description": "Custom file prefix for SCREENSHOT action (saved into betterfront-artifacts/screenshots/)."
+          },
+          "fullPage": {
+            "type": "boolean",
+            "title": "Full Page Screenshot",
+            "description": "For SCREENSHOT action: if true, captures the entire scrollable document height instead of just the viewport.",
+            "default": false
+          },
+          "script": {
+            "type": "string",
+            "title": "Custom Script",
+            "description": "JavaScript expression or function body to evaluate in the browser page for EXECUTE_SCRIPT."
+          },
+          "optional": {
+            "type": "boolean",
+            "title": "Optional Step",
+            "description": "If true, failure of this step logs a warning and does not abort the scenario (ideal for optional promo banners, cookie notices, or one-off dialogs).",
+            "default": false
+          }
+        }
+      }
+    }
+  }
+}

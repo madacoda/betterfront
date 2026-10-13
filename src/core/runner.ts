@@ -15,6 +15,7 @@ import { AutonomousCrawler } from '../agent/crawler.js';
 import { detectTextCollisions } from '../inspectors/layout/textCollision.js';
 import { detectHorizontalBleed } from '../inspectors/layout/horizontalBleed.js';
 import { detectContainerClipping } from '../inspectors/layout/containerClipping.js';
+import { detectInteractiveOcclusion } from '../inspectors/layout/interactiveOcclusion.js';
 import { detectUnsizedMedia } from '../inspectors/layout/unsizedMedia.js';
 import { auditPageLinks } from '../inspectors/network/linkChecker.js';
 import { auditColorContrast } from '../inspectors/a11y/colorContrast.js';
@@ -140,6 +141,15 @@ export class AuditRunner {
           defects.push(...clippings);
           if (clippings.length > 0) {
             console.log(`   ⚠️ Text Clipping: ${clippings.length} starved container(s)`);
+          }
+        }
+
+        // Check 3b: Interactive Component Occlusion (Z-Index / Floating Layer Traps)
+        if (this.config.anomalyChecks.interactiveOcclusion !== false) {
+          const occlusions = await detectInteractiveOcclusion(page, vp);
+          defects.push(...occlusions);
+          if (occlusions.length > 0) {
+            console.log(`   🚨 Interactive Occlusion: ${occlusions.length} element(s) blocked by floating/sticky layers!`);
           }
         }
 

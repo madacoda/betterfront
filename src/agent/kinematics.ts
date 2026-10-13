@@ -92,6 +92,37 @@ export class KinematicsEngine {
     }
   }
 
+  /**
+   * Moves mouse smoothly along Bézier trajectory to hover over an element.
+   */
+  public async humanHover(page: Page, targetSelector: string): Promise<boolean> {
+    try {
+      const el = page.locator(targetSelector).first();
+      const isVisible = await el.isVisible();
+      if (!isVisible) return false;
+
+      const box = await el.boundingBox();
+      if (!box || box.width === 0 || box.height === 0) return false;
+
+      const targetPoint: Point = {
+        x: box.x + box.width * 0.5,
+        y: box.y + box.height * 0.5
+      };
+
+      const path = this.generateHumanPath(this.currentPos, targetPoint);
+      for (const pt of path) {
+        await page.mouse.move(pt.x, pt.y);
+        await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 6) + 4));
+      }
+
+      this.currentPos = targetPoint;
+      await new Promise((r) => setTimeout(r, 150));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   public async rageClick(page: Page, targetSelector: string, clicks = 5): Promise<void> {
     try {
       const el = page.locator(targetSelector).first();

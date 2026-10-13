@@ -11,8 +11,12 @@
   "scripts": {
     "build": "tsc",
     "audit": "node dist/cli.js audit",
+    "uat": "node dist/cli.js uat",
+    "record": "node dist/cli.js record",
     "explore": "node dist/cli.js explore",
-    "test": "node --test tests/audit.test.js"
+    "test": "node --test tests/audit.test.js tests/uat.test.js",
+    "test:audit": "node --test tests/audit.test.js",
+    "test:uat": "node --test tests/uat.test.js"
   },
   "keywords": [
     "frontend-testing",

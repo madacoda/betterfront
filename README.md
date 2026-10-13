@@ -53,7 +53,8 @@ BetterFront allows developers to independently enable or disable any specific an
 | :--- | :--- | :--- | :--- |
 | `textOverlap` | `--no-text-overlap` | Text-on-text collisions | **ON** |
 | `horizontalBleed` | `--no-bleed` | Mobile sideways wobble & viewport overflow | **ON** |
-| `containerClipping` | `--no-clipping` | Starved container height cutting text | **ON** |
+| `containerClipping` | `--no-clipping` | Starved container height or width cutting text | **ON** |
+| `interactiveOcclusion` | `--no-occlusion` | Fixed headers or modals occluding clickables | **ON** |
 | `unsizedMedia` | `--no-unsized-media` | Images/videos missing dimensions (CLS cause) | **ON** |
 | `lowContrast` | `--no-low-contrast` | Text contrast below WCAG 4.5:1 AA | **ON** |
 | `touchTargetSize` | `--no-touch-targets` | Interactive elements smaller than 44x44px | **ON** |
@@ -67,27 +68,55 @@ BetterFront allows developers to independently enable or disable any specific an
 
 ## 🧪 Declarative UAT Scenario Testing
 
-Define human-like user acceptance testing workflows in simple, readable JSON files:
+Define human-like user acceptance testing workflows in simple, readable JSON files with **full IDE autocompletion**, **schema validation**, and **human kinematics**:
 
 ```json
 {
+  "$schema": "./uat-scenario.schema.json",
   "name": "User Onboarding & Checkout Flow",
-  "startUrl": "https://example.com",
+  "startUrl": "http://localhost:7777",
+  "viewports": ["desktop_fhd", "mobile_standard"],
   "steps": [
-    { "action": "GOTO", "url": "https://example.com" },
-    { "action": "ASSERT_VISIBLE", "selector": "p" },
-    { "action": "SCROLL", "scrollPx": 300 },
-    { "action": "ASSERT_NO_OVERLAP" },
+    { "action": "GOTO", "url": "http://localhost:7777", "description": "1. Open app" },
+    { "action": "ASSERT_VISIBLE", "selector": "header.site-topbar" },
+    { "action": "HOVER", "selector": "a.brand-lockup" },
+    { "action": "SCROLL", "scrollPx": 400 },
     { "action": "ASSERT_NO_BLEED" },
-    { "action": "ASSERT_NO_CONSOLE_ERRORS" }
+    { "action": "ASSERT_NO_CONSOLE_ERRORS" },
+    { "action": "SCREENSHOT", "name": "topbar-verification" }
   ]
 }
 ```
 
-Run the UAT scenario instantly:
+### CLI Execution Options:
 ```bash
-node dist/cli.js uat ./uat-scenarios/sample-contact-flow.json
+# Validate scenario syntax and actions (without launching browser)
+node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --validate-only
+
+# Run headless across configured viewports
+node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json
+
+# Record full-motion WebM video and Playwright trace archive of the UAT run
+node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --video --trace
+
+# Run in interactive headed mode to watch live in the browser
+node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed
+
+# Slow down execution by 250ms for visual observation
+node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed --slowmo 250
+
+# Override target viewport
+node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --viewport desktop_fhd
+
+# Live Action Recording: launch browser and record clicks/inputs to scenario JSON
+node dist/cli.js record http://localhost:7777 -o ./uat-scenarios/my-flow.json
 ```
+
+📖 **Detailed Documentation & Standards:**
+- 🏆 **[Gold-Standard UAT Principles & 12 Frontend Invariants Specification](./docs/GOLD_STANDARD_UAT_AND_FRONTEND_INVARIANTS.md)**
+- [UAT Action Catalog & Authoring Recipes](./uat-scenarios/README.md)
+- [UAT Engine Architectural Specification](./docs/UAT_ACTION_GUIDE.md)
+- [JSON Schema Definition](./uat-scenarios/uat-scenario.schema.json)
 
 ---
 

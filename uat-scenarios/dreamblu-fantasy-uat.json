@@ -1,0 +1,71 @@
+{
+  "$schema": "./uat-scenario.schema.json",
+  "name": "Dreamblu Fantasy - Core Homepage & Topbar UAT Flow",
+  "description": "Validates the RPG topbar navigation, brand lockup, currency HUD, and responsive layout stability on http://localhost:7777.",
+  "startUrl": "http://localhost:7777",
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "consoleExceptions": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "1. Navigate to Dreamblu Fantasy Homepage"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "header.site-topbar",
+      "description": "2. Verify topbar navigation is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a.brand-lockup",
+      "description": "3. Verify brand lockup logo is visible"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "a.brand-lockup",
+      "description": "4. Verify brand lockup is physically unoccluded and interactable"
+    },
+    {
+      "action": "HOVER",
+      "selector": "a.brand-lockup",
+      "description": "5. Hover over brand lockup to trigger visual interactive highlight"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 400,
+      "description": "6. Human scroll down game interface"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "7. Verify no horizontal viewport bleed on mobile screens"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "header.site-topbar",
+      "description": "8. Verify topbar navigation has zero content clipping or starvation"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "9. Verify zero unhandled JavaScript console exceptions"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "dreamblu-homepage-topbar",
+      "description": "10. Capture visual evidence screenshot of verified game interface"
+    }
+  ]
+}
