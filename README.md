@@ -1,7 +1,7 @@
 # 🛡️ BetterFront
 
 > **The Gold-Standard Autonomous Frontend Quality Assurance & Production-Readiness Engine**  
-> *Simulate real human interaction, catch critical visual layout defects, track layout shifts (CLS), audit Core Web Vitals, and automate production quality gates.*
+> *Simulate real human interaction, catch critical visual layout defects, track layout shifts (CLS), audit Core Web Vitals, record full-motion interaction videos, and automate production quality gates.*
 
 ---
 
@@ -13,13 +13,16 @@ Modern web development tools tell you if an element is present in the DOM (`toBe
 - 🗂️ **Component Occlusion & Clipping:** Fixed-height containers cutting off text descenders, or sticky headers covering page content on anchor scroll.
 - 📉 **Cumulative Layout Shift (CLS):** Content jumping 120px down right as a user attempts to click a button.
 - 🤖 **Robotic Testing Blindspots:** Instantaneous teleports that never trigger real hover states, focus traps, or debounced search race conditions.
+- 🎥 **Visual Evidence Gap:** Lack of continuous full-motion video recordings and annotated forensic screenshot overlays.
 
 **BetterFront** bridges the gap between mechanical assertions and human visual perception by combining:
 1. **Mathematical In-Browser DOM Geometry** (`Range.getClientRects()`, AABB collision, Stacking Context trees).
 2. **Cognitive Multimodal Vision AI** (Gemini 2.0 Flash / Claude 3.5 Sonnet) to filter intentional UI design patterns with zero false positives.
 3. **Autonomous Human Kinematics** (Bézier mouse trajectories, Fitts's law, typing cadence with typos, scroll inertia).
 4. **Real-Time Layout Instability Attribution** (`PerformanceObserver` + CDP for node-level CLS tracking).
-5. **Production-Ready Quality Gates** (Objective 0–100 score + zero-tolerance blocker enforcement).
+5. **Visual Flight Recorder** (Continuous 60fps `.webm` video recording, Playwright `.zip` traces, and annotated screenshot overlays).
+6. **Declarative UAT Scenario Engine** (Clean JSON checklists with human-like execution).
+7. **Production-Ready Quality Gates** (Objective 0–100 score + zero-tolerance blocker enforcement).
 
 ---
 
@@ -38,10 +41,57 @@ All deep architectural research, comparative benchmarks, formulas, algorithms, a
 | 🚦 **[06: UAT & Production-Readiness Quality Gate](./strategies/06_UAT_AND_PRODUCTION_READINESS_STANDARD.md)** | The 0–100 Health Index, Hard Blockers vs Soft Warnings, declarative UAT journeys, and CI/CD PR gating. |
 | 🏗️ **[07: System Architecture & Implementation Blueprint](./strategies/07_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION_BLUEPRINT.md)** | Modular codebase organization, `betterfront.config.ts` specification, and TypeScript interfaces. |
 | 🧪 **[08: Ready-to-Run Proof-of-Concept & Scaffolding](./strategies/08_READY_TO_RUN_POC_AND_SCAFFOLDING.md)** | Production-ready, runnable TypeScript modules and CLI scaffolding ready to test immediately. |
+| 📋 **[09: Anomaly Catalog & Declarative UAT Checklist](./strategies/09_ANOMALY_CATALOG_AND_UAT_CHECKLIST.md)** | Comprehensive 12-anomaly catalog, granular ON/OFF toggles, declarative UAT scenario schema, and QA sign-off checklist. |
 
 ---
 
-## 🚀 Quickstart
+## ⚙️ Granular Anomaly Toggles (Turn ON or OFF)
+
+BetterFront allows developers to independently enable or disable any specific anomaly check via `betterfront.config.ts` or CLI flags:
+
+| Anomaly Key | CLI Flag to Disable | Description | Default |
+| :--- | :--- | :--- | :--- |
+| `textOverlap` | `--no-text-overlap` | Text-on-text collisions | **ON** |
+| `horizontalBleed` | `--no-bleed` | Mobile sideways wobble & viewport overflow | **ON** |
+| `containerClipping` | `--no-clipping` | Starved container height cutting text | **ON** |
+| `unsizedMedia` | `--no-unsized-media` | Images/videos missing dimensions (CLS cause) | **ON** |
+| `lowContrast` | `--no-low-contrast` | Text contrast below WCAG 4.5:1 AA | **ON** |
+| `touchTargetSize` | `--no-touch-targets` | Interactive elements smaller than 44x44px | **ON** |
+| `textZoom200Percent`| (default disabled) | Layout stress under 200% browser font scale | **OFF** |
+| `a11yWcagViolations`| `--no-a11y` | Axe-core WCAG 2.2 AA accessibility rules | **ON** |
+| `layoutShifts` | `--no-shifts` | Real-time Cumulative Layout Shift (CLS) | **ON** |
+| `consoleExceptions` | `--no-console-errors` | Unhandled JavaScript console exceptions | **ON** |
+| `brokenLinks` | `--no-broken-links` | Empty `href` and dead `#anchor` links | **ON** |
+
+---
+
+## 🧪 Declarative UAT Scenario Testing
+
+Define human-like user acceptance testing workflows in simple, readable JSON files:
+
+```json
+{
+  "name": "User Onboarding & Checkout Flow",
+  "startUrl": "https://example.com",
+  "steps": [
+    { "action": "GOTO", "url": "https://example.com" },
+    { "action": "ASSERT_VISIBLE", "selector": "p" },
+    { "action": "SCROLL", "scrollPx": 300 },
+    { "action": "ASSERT_NO_OVERLAP" },
+    { "action": "ASSERT_NO_BLEED" },
+    { "action": "ASSERT_NO_CONSOLE_ERRORS" }
+  ]
+}
+```
+
+Run the UAT scenario instantly:
+```bash
+node dist/cli.js uat ./uat-scenarios/sample-contact-flow.json
+```
+
+---
+
+## 🚀 Quickstart & Usage
 
 ### 1. Installation
 ```bash
@@ -49,14 +99,28 @@ All deep architectural research, comparative benchmarks, formulas, algorithms, a
 git clone https://github.com/your-org/betterfront.git
 cd betterfront
 
-# Install dependencies using npm.cmd (Windows) or npm
+# Install dependencies (Windows PowerShell)
 npm.cmd install
+
+# Compile TypeScript
+npm.cmd run build
 ```
 
-### 2. Run the In-Browser Layout & CLS Audit PoC
+### 2. Run Comprehensive Production Audit
 ```bash
-# Audit any URL across Mobile (iPhone SE), Android (Pixel 7), and Desktop viewports
-npm.cmd run poc https://example.com
+# Run audit with full video recording and trace archive
+node dist/cli.js audit https://example.com
+
+# Run fast smoke audit (single mobile viewport)
+node dist/cli.js audit https://example.com --preset=fast-smoke
+
+# Run audit with specific anomaly checks disabled
+node dist/cli.js audit https://example.com --no-touch-targets --no-low-contrast
+```
+
+### 3. Run Self-Tests
+```bash
+npm.cmd test
 ```
 
 ---

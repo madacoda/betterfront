@@ -1,0 +1,46 @@
+{
+  "name": "Example Domain Navigation & Sanity UAT Flow",
+  "description": "Validates that a human user can browse Example Domain, verify body content, smooth scroll, and verify zero layout defects or console errors.",
+  "startUrl": "https://example.com",
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "containerClipping": true,
+    "consoleExceptions": true
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "https://example.com",
+      "description": "1. Navigate to Example Domain"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "p",
+      "description": "2. Verify main documentation paragraph is rendered"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "p",
+      "text": "This domain is for use in documentation examples",
+      "description": "3. Verify paragraph contains expected documentation text"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 200,
+      "description": "4. Smooth scroll with human momentum"
+    },
+    {
+      "action": "ASSERT_NO_OVERLAP",
+      "description": "5. Verify no text collisions on page"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "6. Verify no mobile horizontal viewport bleed"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "7. Verify zero unhandled console exceptions"
+    }
+  ]
+}

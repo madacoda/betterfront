@@ -9,6 +9,9 @@ export type DefectType =
   | 'COMPONENT_OCCLUSION' 
   | 'TEXT_CLIPPING' 
   | 'HORIZONTAL_BLEED'
+  | 'UNSIZED_MEDIA'
+  | 'LOW_COLOR_CONTRAST'
+  | 'BROKEN_LINK'
   | 'TOUCH_TARGET_TOO_SMALL'
   | 'LAYOUT_SHIFT_UNEXPECTED'
   | 'CONSOLE_EXCEPTION'
@@ -67,6 +70,7 @@ export interface VisualDefect {
     description: string;
     suggestedCssFix: string;
   };
+  meta?: Record<string, any>;
 }
 
 export interface LayoutShiftSource {
@@ -112,6 +116,32 @@ export interface NetworkAnomalyRecord {
   failureText?: string;
 }
 
+export interface UnsizedMediaDefect {
+  selector: string;
+  tagName: string;
+  src?: string | null;
+  rect: RectBox;
+  missingAttributes: string[];
+}
+
+export interface BrokenLinkDefect {
+  selector: string;
+  href: string;
+  issue: 'EMPTY_HREF' | 'MISSING_ANCHOR_TARGET' | 'HTTP_ERROR';
+  statusCode?: number;
+  anchorId?: string;
+}
+
+export interface LowContrastDefect {
+  selector: string;
+  text: string;
+  textColor: string;
+  bgColor: string;
+  contrastRatio: number;
+  requiredRatio: number;
+  rect: RectBox;
+}
+
 export interface CaptureArtifacts {
   videoPath?: string;
   tracePath?: string;
@@ -128,6 +158,9 @@ export interface ViewportAuditResult {
   bleeds: Array<{ selector: string; overflowPx: number; rect: RectBox; styleWidth?: string }>;
   layoutShifts: LayoutShiftEvent[];
   touchTargetDefects: TouchTargetDefect[];
+  unsizedMediaDefects: UnsizedMediaDefect[];
+  brokenLinkDefects: BrokenLinkDefect[];
+  lowContrastDefects: LowContrastDefect[];
   consoleErrors: ConsoleMessageRecord[];
   networkErrors: NetworkAnomalyRecord[];
   axeViolations: Array<{ id: string; impact: string; description: string; helpUrl: string; nodesCount: number }>;
@@ -155,6 +188,7 @@ export interface AuditRunSummary {
   totalConsoleErrors: number;
   totalNetworkErrors: number;
   viewportResults: ViewportAuditResult[];
+  uatResults?: UatRunResult[];
   lighthouseSummary?: {
     performance: number;
     accessibility: number;
@@ -172,10 +206,37 @@ export interface AuditRunSummary {
   };
 }
 
+/**
+ * Granular Anomaly Toggles: Every single check can be turned ON or OFF
+ */
+export interface AnomalyToggles {
+  // Visual & Layout
+  textOverlap: boolean;
+  horizontalBleed: boolean;
+  containerClipping: boolean;
+  unsizedMedia: boolean;
+  lowContrast: boolean;
+
+  // Usability & Accessibility
+  touchTargetSize: boolean;
+  textZoom200Percent: boolean;
+  a11yWcagViolations: boolean;
+
+  // Performance
+  layoutShifts: boolean;
+  lighthouseCore: boolean;
+
+  // Reliability & Console
+  consoleExceptions: boolean;
+  brokenNetworkRequests: boolean;
+  brokenLinks: boolean;
+}
+
 export interface BetterFrontConfig {
   targetUrl: string;
   preset?: 'production-gate' | 'fast-smoke' | 'comprehensive-deep';
   viewports: ViewportDefinition[];
+  anomalyChecks: AnomalyToggles;
   humanAgent: {
     enabled: boolean;
     persona: 'power-user' | 'impatient-mobile' | 'cautious-first-timer' | 'keyboard-only';
@@ -188,6 +249,8 @@ export interface BetterFrontConfig {
     detectTextOverlap: boolean;
     detectHorizontalBleed: boolean;
     detectClipping: boolean;
+    detectUnsizedMedia: boolean;
+    detectLowContrast: boolean;
     minCollisionAreaPx: number;
     enableAiVisionTriage: boolean;
     vlmProvider?: 'gemini' | 'claude' | 'openai' | 'mock';
@@ -210,16 +273,76 @@ export interface BetterFrontConfig {
     enabled: boolean;
     minTouchTargetPx: number;
     test200PercentZoom: boolean;
+    checkColorContrast: boolean;
   };
   qualityGate: {
     minOverallScore: number;
-    failOnBlocker: true;
+    failOnBlocker: boolean;
     blockOnConsoleErrors: boolean;
     blockOnHorizontalBleed: boolean;
     blockOnTextCollision: boolean;
+    blockOnBrokenLinks: boolean;
+    blockOnUnsizedMedia: boolean;
   };
   reporting: {
     outputHtml: string;
     outputJson: string;
   };
+}
+
+// -------------------------------------------------------------
+// Declarative UAT Scenario Models
+// -------------------------------------------------------------
+
+export type UatActionType = 
+  | 'GOTO'
+  | 'CLICK'
+  | 'TYPE'
+  | 'SCROLL'
+  | 'WAIT'
+  | 'FILL_FORM'
+  | 'ASSERT_TEXT'
+  | 'ASSERT_VISIBLE'
+  | 'ASSERT_NO_OVERLAP'
+  | 'ASSERT_NO_BLEED'
+  | 'ASSERT_NO_CONSOLE_ERRORS';
+
+export interface UatStep {
+  action: UatActionType;
+  description?: string;
+  selector?: string;
+  url?: string;
+  text?: string;
+  scrollPx?: number;
+  waitMs?: number;
+  profile?: 'GUEST_CHECKOUT' | 'CONTACT_FORM' | 'SIGNUP' | 'SEARCH';
+}
+
+export interface UatScenario {
+  name: string;
+  description: string;
+  startUrl: string;
+  viewports?: string[];
+  anomalyChecks?: Partial<AnomalyToggles>;
+  steps: UatStep[];
+}
+
+export interface UatStepResult {
+  stepIndex: number;
+  action: UatActionType;
+  description: string;
+  passed: boolean;
+  durationMs: number;
+  error?: string;
+  anomaliesDetected?: VisualDefect[];
+}
+
+export interface UatRunResult {
+  scenarioName: string;
+  passed: boolean;
+  totalSteps: number;
+  passedSteps: number;
+  failedSteps: number;
+  durationMs: number;
+  steps: UatStepResult[];
 }

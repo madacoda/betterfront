@@ -4,7 +4,10 @@ import {
   BetterFrontConfig,
   AuditRunSummary,
   ViewportAuditResult,
-  VisualDefect
+  VisualDefect,
+  UnsizedMediaDefect,
+  BrokenLinkDefect,
+  LowContrastDefect
 } from '../types/index.js';
 import { BrowserPool } from './browserPool.js';
 import { CaptureRecorder } from './captureRecorder.js';
@@ -12,6 +15,9 @@ import { AutonomousCrawler } from '../agent/crawler.js';
 import { detectTextCollisions } from '../inspectors/layout/textCollision.js';
 import { detectHorizontalBleed } from '../inspectors/layout/horizontalBleed.js';
 import { detectContainerClipping } from '../inspectors/layout/containerClipping.js';
+import { detectUnsizedMedia } from '../inspectors/layout/unsizedMedia.js';
+import { auditPageLinks } from '../inspectors/network/linkChecker.js';
+import { auditColorContrast } from '../inspectors/a11y/colorContrast.js';
 import { attachClsObserver, extractCapturedLayoutShifts } from '../inspectors/perf/clsObserver.js';
 import { auditTouchTargets } from '../inspectors/a11y/touchTargets.js';
 import { runTextZoomStressTest } from '../inspectors/a11y/textZoom.js';
@@ -64,7 +70,7 @@ export class AuditRunner {
         if (this.config.recording.recordTrace) {
           await recorder.startTracing(context);
         }
-        if (this.config.performance.trackRealtimeCls) {
+        if (this.config.anomalyChecks.layoutShifts) {
           await attachClsObserver(page);
         }
 
@@ -104,7 +110,8 @@ export class AuditRunner {
         // 5. Run Layout & Visual Collision Inspectors
         const defects: VisualDefect[] = [];
 
-        if (this.config.layoutEngine.detectTextOverlap) {
+        // Check 1: Text-on-Text Collision
+        if (this.config.anomalyChecks.textOverlap) {
           const textCollisions = await detectTextCollisions(page, vp);
           defects.push(...textCollisions);
           if (textCollisions.length > 0) {
@@ -114,8 +121,9 @@ export class AuditRunner {
           }
         }
 
+        // Check 2: Mobile Horizontal Viewport Bleed
         let rawBleeds: any[] = [];
-        if (this.config.layoutEngine.detectHorizontalBleed && vp.isMobile) {
+        if (this.config.anomalyChecks.horizontalBleed && vp.isMobile) {
           const bleedResult = await detectHorizontalBleed(page, vp);
           rawBleeds = bleedResult.rawBleeds;
           defects.push(...bleedResult.defects);
@@ -126,7 +134,8 @@ export class AuditRunner {
           }
         }
 
-        if (this.config.layoutEngine.detectClipping) {
+        // Check 3: Container Clipping & Starvation
+        if (this.config.anomalyChecks.containerClipping) {
           const clippings = await detectContainerClipping(page, vp);
           defects.push(...clippings);
           if (clippings.length > 0) {
@@ -134,34 +143,79 @@ export class AuditRunner {
           }
         }
 
-        // 6. Usability & Accessibility
-        const touchFailures = await auditTouchTargets(page, vp, this.config.accessibility.minTouchTargetPx);
-        if (touchFailures.length > 0) {
-          console.log(`   ⚠️ Touch Targets: ${touchFailures.length} elements smaller than ${this.config.accessibility.minTouchTargetPx}px`);
+        // Check 4: Unsized Media (Primary CLS culprit)
+        let rawUnsizedMedia: UnsizedMediaDefect[] = [];
+        if (this.config.anomalyChecks.unsizedMedia) {
+          const unsizedResult = await detectUnsizedMedia(page, vp);
+          rawUnsizedMedia = unsizedResult.rawList;
+          defects.push(...unsizedResult.defects);
+          if (unsizedResult.rawList.length > 0) {
+            console.log(`   ⚠️ Unsized Media: ${unsizedResult.rawList.length} element(s) missing dimension attributes`);
+          }
         }
 
+        // Check 5: Usability - Touch Targets
+        let touchFailures: any[] = [];
+        if (this.config.anomalyChecks.touchTargetSize) {
+          touchFailures = await auditTouchTargets(page, vp, this.config.accessibility.minTouchTargetPx);
+          if (touchFailures.length > 0) {
+            console.log(`   ⚠️ Touch Targets: ${touchFailures.length} elements smaller than ${this.config.accessibility.minTouchTargetPx}px`);
+          }
+        }
+
+        // Check 6: Color Contrast (WCAG 1.4.3 AA)
+        let rawContrast: LowContrastDefect[] = [];
+        if (this.config.anomalyChecks.lowContrast) {
+          const contrastResult = await auditColorContrast(page, vp, 4.5);
+          rawContrast = contrastResult.rawList;
+          defects.push(...contrastResult.defects);
+          if (contrastResult.rawList.length > 0) {
+            console.log(`   ⚠️ Color Contrast: ${contrastResult.rawList.length} text elements below 4.5:1 ratio`);
+          }
+        }
+
+        // Check 7: Broken Links & Dead Anchors
+        let rawBrokenLinks: BrokenLinkDefect[] = [];
+        if (this.config.anomalyChecks.brokenLinks) {
+          const linkResult = await auditPageLinks(page, vp);
+          rawBrokenLinks = linkResult.rawList;
+          defects.push(...linkResult.defects);
+          if (linkResult.rawList.length > 0) {
+            console.log(`   ⚠️ Link Integrity: ${linkResult.rawList.length} dead anchor/empty link(s)`);
+          }
+        }
+
+        // Check 8: 200% Text Scaling Stress Test
         let zoomDefects: VisualDefect[] = [];
-        if (this.config.accessibility.test200PercentZoom) {
+        if (this.config.anomalyChecks.textZoom200Percent) {
           zoomDefects = await runTextZoomStressTest(page, vp);
           defects.push(...zoomDefects);
         }
 
+        // Check 9: Axe WCAG 2.2 AA Accessibility
         let axeResult = { violationsCount: 0, violations: [] as any[] };
-        if (this.config.accessibility.enabled) {
+        if (this.config.anomalyChecks.a11yWcagViolations) {
           axeResult = await runAxeAudit(page);
           if (axeResult.violationsCount > 0) {
             console.log(`   ⚠️ WCAG Accessibility: ${axeResult.violationsCount} violation rules triggered`);
           }
         }
 
-        // 7. Real-time CLS extraction
-        const layoutShifts = await extractCapturedLayoutShifts(page);
-        if (layoutShifts.length > 0) {
-          const totalShift = layoutShifts.reduce((acc, s) => acc + s.value, 0).toFixed(4);
-          console.log(`   ⚠️ Layout Instability (CLS): ${layoutShifts.length} shift(s) (Total score: ${totalShift})`);
-        } else {
-          console.log(`   ✅ Layout Instability (CLS): 0 unprovoked shifts`);
+        // Check 10: Real-time CLS extraction
+        let layoutShifts: any[] = [];
+        if (this.config.anomalyChecks.layoutShifts) {
+          layoutShifts = await extractCapturedLayoutShifts(page);
+          if (layoutShifts.length > 0) {
+            const totalShift = layoutShifts.reduce((acc: number, s: any) => acc + s.value, 0).toFixed(4);
+            console.log(`   ⚠️ Layout Instability (CLS): ${layoutShifts.length} shift(s) (Total score: ${totalShift})`);
+          } else {
+            console.log(`   ✅ Layout Instability (CLS): 0 unprovoked shifts`);
+          }
         }
+
+        // Filter console/network errors if anomaly toggles are off
+        const activeConsoleErrors = this.config.anomalyChecks.consoleExceptions ? consoleErrors : [];
+        const activeNetworkErrors = this.config.anomalyChecks.brokenNetworkRequests ? networkErrors : [];
 
         // 8. Capture Annotated Screenshot & Forensic Crops
         let annotatedPath: string | undefined;
@@ -192,7 +246,7 @@ export class AuditRunner {
 
         viewportResults.push({
           viewport: vp,
-          passed: defects.length === 0 && consoleErrors.length === 0,
+          passed: defects.length === 0 && activeConsoleErrors.length === 0,
           artifacts: {
             videoPath,
             tracePath,
@@ -204,8 +258,11 @@ export class AuditRunner {
           bleeds: rawBleeds,
           layoutShifts,
           touchTargetDefects: touchFailures,
-          consoleErrors,
-          networkErrors,
+          unsizedMediaDefects: rawUnsizedMedia,
+          brokenLinkDefects: rawBrokenLinks,
+          lowContrastDefects: rawContrast,
+          consoleErrors: activeConsoleErrors,
+          networkErrors: activeNetworkErrors,
           axeViolations: axeResult.violations
         });
 

@@ -1,0 +1,41 @@
+{
+  "name": "Defect Laboratory Form Submission & Interaction Flow",
+  "description": "Tests filling out the contact form, clicking the action button, and asserting runtime behavior.",
+  "startUrl": "http://localhost:8912",
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "consoleExceptions": true
+  },
+  "steps": [
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "h1",
+      "description": "1. Verify header title"
+    },
+    {
+      "action": "CLICK",
+      "selector": "#cta-button",
+      "description": "2. Click instant action CTA button"
+    },
+    {
+      "action": "FILL_FORM",
+      "description": "3. Autonomously fill contact form using Faker synthetic data"
+    },
+    {
+      "action": "CLICK",
+      "selector": "#submit-form-btn",
+      "description": "4. Submit contact form"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "#form-feedback",
+      "text": "Form submitted successfully!",
+      "description": "5. Verify form feedback message"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "6. Verify no runtime JavaScript errors"
+    }
+  ]
+}

@@ -66,6 +66,21 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
         targetUrl,
         preset: 'fast-smoke',
         viewports: [STANDARD_VIEWPORTS.mobile_standard],
+        anomalyChecks: {
+          textOverlap: true,
+          horizontalBleed: true,
+          containerClipping: true,
+          unsizedMedia: false,
+          lowContrast: false,
+          touchTargetSize: true,
+          textZoom200Percent: false,
+          a11yWcagViolations: false,
+          layoutShifts: true,
+          lighthouseCore: false,
+          consoleExceptions: true,
+          brokenNetworkRequests: true,
+          brokenLinks: false
+        },
         humanAgent: {
           enabled: true,
           persona: 'impatient-mobile',
@@ -78,6 +93,8 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           detectTextOverlap: true,
           detectHorizontalBleed: true,
           detectClipping: true,
+          detectUnsizedMedia: false,
+          detectLowContrast: false,
           minCollisionAreaPx: 12,
           enableAiVisionTriage: false,
           vlmProvider: 'mock'
@@ -96,16 +113,19 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           maxAllowedLcpMs: 3500
         },
         accessibility: {
-          enabled: true,
+          enabled: false,
           minTouchTargetPx: 44,
-          test200PercentZoom: false
+          test200PercentZoom: false,
+          checkColorContrast: false
         },
         qualityGate: {
           minOverallScore: 75,
           failOnBlocker: true,
           blockOnConsoleErrors: true,
           blockOnHorizontalBleed: true,
-          blockOnTextCollision: true
+          blockOnTextCollision: true,
+          blockOnBrokenLinks: false,
+          blockOnUnsizedMedia: false
         },
         reporting: {
           outputHtml: './betterfront-report.html',
@@ -125,6 +145,21 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           STANDARD_VIEWPORTS.desktop_laptop,
           STANDARD_VIEWPORTS.desktop_fhd
         ],
+        anomalyChecks: {
+          textOverlap: true,
+          horizontalBleed: true,
+          containerClipping: true,
+          unsizedMedia: true,
+          lowContrast: true,
+          touchTargetSize: true,
+          textZoom200Percent: true,
+          a11yWcagViolations: true,
+          layoutShifts: true,
+          lighthouseCore: true,
+          consoleExceptions: true,
+          brokenNetworkRequests: true,
+          brokenLinks: true
+        },
         humanAgent: {
           enabled: true,
           persona: 'power-user',
@@ -137,6 +172,8 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           detectTextOverlap: true,
           detectHorizontalBleed: true,
           detectClipping: true,
+          detectUnsizedMedia: true,
+          detectLowContrast: true,
           minCollisionAreaPx: 10,
           enableAiVisionTriage: true,
           vlmProvider: 'mock'
@@ -157,14 +194,17 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
         accessibility: {
           enabled: true,
           minTouchTargetPx: 44,
-          test200PercentZoom: true
+          test200PercentZoom: true,
+          checkColorContrast: true
         },
         qualityGate: {
           minOverallScore: 90,
           failOnBlocker: true,
           blockOnConsoleErrors: true,
           blockOnHorizontalBleed: true,
-          blockOnTextCollision: true
+          blockOnTextCollision: true,
+          blockOnBrokenLinks: true,
+          blockOnUnsizedMedia: true
         },
         reporting: {
           outputHtml: './betterfront-report.html',
@@ -182,6 +222,21 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           STANDARD_VIEWPORTS.tablet_portrait,
           STANDARD_VIEWPORTS.desktop_fhd
         ],
+        anomalyChecks: {
+          textOverlap: true,
+          horizontalBleed: true,
+          containerClipping: true,
+          unsizedMedia: true,
+          lowContrast: true,
+          touchTargetSize: true,
+          textZoom200Percent: false,
+          a11yWcagViolations: true,
+          layoutShifts: true,
+          lighthouseCore: false,
+          consoleExceptions: true,
+          brokenNetworkRequests: true,
+          brokenLinks: true
+        },
         humanAgent: {
           enabled: true,
           persona: 'impatient-mobile',
@@ -194,6 +249,8 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           detectTextOverlap: true,
           detectHorizontalBleed: true,
           detectClipping: true,
+          detectUnsizedMedia: true,
+          detectLowContrast: true,
           minCollisionAreaPx: 12,
           enableAiVisionTriage: false,
           vlmProvider: 'mock'
@@ -214,14 +271,17 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
         accessibility: {
           enabled: true,
           minTouchTargetPx: 44,
-          test200PercentZoom: false
+          test200PercentZoom: false,
+          checkColorContrast: true
         },
         qualityGate: {
           minOverallScore: 85,
           failOnBlocker: true,
           blockOnConsoleErrors: true,
           blockOnHorizontalBleed: true,
-          blockOnTextCollision: true
+          blockOnTextCollision: true,
+          blockOnBrokenLinks: false,
+          blockOnUnsizedMedia: false
         },
         reporting: {
           outputHtml: './betterfront-report.html',

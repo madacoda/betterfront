@@ -9,6 +9,7 @@ export function resolveConfig(options: Partial<BetterFrontConfig> & { targetUrl:
     ...basePreset,
     ...options,
     viewports: (options.viewports && options.viewports.length > 0) ? options.viewports : basePreset.viewports,
+    anomalyChecks: { ...basePreset.anomalyChecks, ...options.anomalyChecks },
     humanAgent: { ...basePreset.humanAgent, ...options.humanAgent },
     layoutEngine: { ...basePreset.layoutEngine, ...options.layoutEngine },
     recording: { ...basePreset.recording, ...options.recording },

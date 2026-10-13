@@ -11,10 +11,41 @@ export const ViewportSchema = z.object({
   userAgent: z.string().optional()
 });
 
+export const AnomalyTogglesSchema = z.object({
+  textOverlap: z.boolean().default(true),
+  horizontalBleed: z.boolean().default(true),
+  containerClipping: z.boolean().default(true),
+  unsizedMedia: z.boolean().default(true),
+  lowContrast: z.boolean().default(true),
+  touchTargetSize: z.boolean().default(true),
+  textZoom200Percent: z.boolean().default(false),
+  a11yWcagViolations: z.boolean().default(true),
+  layoutShifts: z.boolean().default(true),
+  lighthouseCore: z.boolean().default(false),
+  consoleExceptions: z.boolean().default(true),
+  brokenNetworkRequests: z.boolean().default(true),
+  brokenLinks: z.boolean().default(true)
+}).default({
+  textOverlap: true,
+  horizontalBleed: true,
+  containerClipping: true,
+  unsizedMedia: true,
+  lowContrast: true,
+  touchTargetSize: true,
+  textZoom200Percent: false,
+  a11yWcagViolations: true,
+  layoutShifts: true,
+  lighthouseCore: false,
+  consoleExceptions: true,
+  brokenNetworkRequests: true,
+  brokenLinks: true
+});
+
 export const ConfigSchema = z.object({
   targetUrl: z.string().url(),
   preset: z.enum(['production-gate', 'fast-smoke', 'comprehensive-deep']).optional().default('production-gate'),
   viewports: z.array(ViewportSchema).min(1),
+  anomalyChecks: AnomalyTogglesSchema,
   humanAgent: z.object({
     enabled: z.boolean().default(true),
     persona: z.enum(['power-user', 'impatient-mobile', 'cautious-first-timer', 'keyboard-only']).default('impatient-mobile'),
@@ -34,6 +65,8 @@ export const ConfigSchema = z.object({
     detectTextOverlap: z.boolean().default(true),
     detectHorizontalBleed: z.boolean().default(true),
     detectClipping: z.boolean().default(true),
+    detectUnsizedMedia: z.boolean().default(true),
+    detectLowContrast: z.boolean().default(true),
     minCollisionAreaPx: z.number().default(12),
     enableAiVisionTriage: z.boolean().default(false),
     vlmProvider: z.enum(['gemini', 'claude', 'openai', 'mock']).default('mock'),
@@ -42,6 +75,8 @@ export const ConfigSchema = z.object({
     detectTextOverlap: true,
     detectHorizontalBleed: true,
     detectClipping: true,
+    detectUnsizedMedia: true,
+    detectLowContrast: true,
     minCollisionAreaPx: 12,
     enableAiVisionTriage: false,
     vlmProvider: 'mock'
@@ -73,24 +108,30 @@ export const ConfigSchema = z.object({
   accessibility: z.object({
     enabled: z.boolean().default(true),
     minTouchTargetPx: z.number().default(44),
-    test200PercentZoom: z.boolean().default(false)
+    test200PercentZoom: z.boolean().default(false),
+    checkColorContrast: z.boolean().default(true)
   }).default({
     enabled: true,
     minTouchTargetPx: 44,
-    test200PercentZoom: false
+    test200PercentZoom: false,
+    checkColorContrast: true
   }),
   qualityGate: z.object({
     minOverallScore: z.number().min(0).max(100).default(85),
-    failOnBlocker: z.literal(true).default(true),
+    failOnBlocker: z.boolean().default(true),
     blockOnConsoleErrors: z.boolean().default(true),
     blockOnHorizontalBleed: z.boolean().default(true),
-    blockOnTextCollision: z.boolean().default(true)
+    blockOnTextCollision: z.boolean().default(true),
+    blockOnBrokenLinks: z.boolean().default(false),
+    blockOnUnsizedMedia: z.boolean().default(false)
   }).default({
     minOverallScore: 85,
     failOnBlocker: true,
     blockOnConsoleErrors: true,
     blockOnHorizontalBleed: true,
-    blockOnTextCollision: true
+    blockOnTextCollision: true,
+    blockOnBrokenLinks: false,
+    blockOnUnsizedMedia: false
   }),
   reporting: z.object({
     outputHtml: z.string().default('./betterfront-report.html'),
