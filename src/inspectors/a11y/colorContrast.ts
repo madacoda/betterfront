@@ -4,13 +4,28 @@ import { LowContrastDefect, VisualDefect, ViewportDefinition } from '../../types
 export async function auditColorContrast(
   page: Page,
   viewport: ViewportDefinition,
-  minRatio = 4.5
+  defaultMinRatio = 4.5
 ): Promise<{ defects: VisualDefect[]; rawList: LowContrastDefect[] }> {
-  const rawList = await page.evaluate((requiredRatio) => {
-    function parseRgb(colorStr: string): [number, number, number] | null {
-      const match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  const rawList = await page.evaluate((baseMinRatio) => {
+    function parseRgba(colorStr: string): [number, number, number, number] | null {
+      if (!colorStr || colorStr === 'transparent') return [0, 0, 0, 0];
+      const match = colorStr.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*[,/]\s*([0-9.]+))?\s*\)/);
       if (!match) return null;
-      return [parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10)];
+      const r = parseInt(match[1], 10);
+      const g = parseInt(match[2], 10);
+      const b = parseInt(match[3], 10);
+      const a = match[4] !== undefined ? parseFloat(match[4]) : 1;
+      return [r, g, b, isNaN(a) ? 1 : a];
+    }
+
+    // Alpha-blend foreground RGBA over opaque RGB background
+    function blendOver(fg: [number, number, number, number], bg: [number, number, number]): [number, number, number] {
+      const alpha = Math.max(0, Math.min(1, fg[3]));
+      return [
+        Math.round(fg[0] * alpha + bg[0] * (1 - alpha)),
+        Math.round(fg[1] * alpha + bg[1] * (1 - alpha)),
+        Math.round(fg[2] * alpha + bg[2] * (1 - alpha))
+      ];
     }
 
     function getLuminance([r, g, b]: [number, number, number]): number {
@@ -29,46 +44,69 @@ export async function auditColorContrast(
       return (brightest + 0.05) / (darkest + 0.05);
     }
 
-    function getEffectiveBgColor(el: Element): [number, number, number] {
+    // Collect ancestor background layers from root down to element and alpha-composite them
+    function getCompositedBgColor(el: Element): [number, number, number] {
+      const layers: Array<[number, number, number, number]> = [];
       let current: Element | null = el;
-      while (current && current !== document.documentElement) {
-        const bg = window.getComputedStyle(current).backgroundColor;
-        const rgb = parseRgb(bg);
-        // If not transparent (alpha !== 0)
-        if (rgb && !bg.includes('rgba(0, 0, 0, 0)')) {
-          return rgb;
+      while (current) {
+        const bgStr = window.getComputedStyle(current).backgroundColor;
+        const rgba = parseRgba(bgStr);
+        if (rgba && rgba[3] > 0) {
+          layers.unshift(rgba);
+          if (rgba[3] >= 0.999) break; // Reached fully opaque ancestor
         }
         current = current.parentElement;
       }
-      return [255, 255, 255]; // Default white background
+
+      let composited: [number, number, number] = [255, 255, 255];
+      for (const layer of layers) {
+        composited = blendOver(layer, composited);
+      }
+      return composited;
     }
 
-    const textElements = Array.from(document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, a, button, label'));
+    const textElements = Array.from(document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, a, button, label, li, td, th'));
     const lowContrast: any[] = [];
 
     textElements.forEach((el) => {
-      const text = el.textContent?.trim();
-      if (!text || text.length < 2) return;
+      // Only check elements that directly contain a non-empty text node
+      const hasDirectText = Array.from(el.childNodes).some(
+        (n) => n.nodeType === Node.TEXT_NODE && (n.textContent || '').trim().length >= 2
+      );
+      if (!hasDirectText) return;
 
+      const text = (el.textContent || '').trim();
       const style = window.getComputedStyle(el);
       if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) return;
 
-      const textRgb = parseRgb(style.color);
-      if (!textRgb) return;
+      const textRgba = parseRgba(style.color);
+      if (!textRgba) return;
 
-      const bgRgb = getEffectiveBgColor(el);
-      const ratio = getContrast(textRgb, bgRgb);
+      const bgRgb = getCompositedBgColor(el);
+      const effectiveTextRgb = blendOver(textRgba, bgRgb);
+      const ratio = getContrast(effectiveTextRgb, bgRgb);
+
+      // WCAG 1.4.3 AA Large Text rule: >= 24px (18pt) OR >= 18.66px (14pt) bold (fontWeight >= 700)
+      const fontSizePx = parseFloat(style.fontSize) || 16;
+      const fontWeightNum = parseInt(style.fontWeight, 10) || (style.fontWeight === 'bold' ? 700 : 400);
+      const isLargeText = fontSizePx >= 24 || (fontSizePx >= 18.66 && fontWeightNum >= 700);
+      const requiredRatio = isLargeText ? Math.min(baseMinRatio, 3.0) : baseMinRatio;
 
       if (ratio < requiredRatio) {
         const rect = el.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
+          const cls = typeof el.className === 'string' && el.className.trim()
+            ? '.' + el.className.trim().split(/\s+/)[0]
+            : '';
           lowContrast.push({
-            selector: el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className.trim().split(/\s+/)[0] : ''),
+            selector: el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + cls,
             text: text.substring(0, 40),
-            textColor: style.color,
+            textColor: `rgb(${effectiveTextRgb.join(', ')})`,
             bgColor: `rgb(${bgRgb.join(', ')})`,
             contrastRatio: Math.round(ratio * 100) / 100,
             requiredRatio,
+            fontSizePx: Math.round(fontSizePx * 10) / 10,
+            isLargeText,
             rect: {
               top: Math.round(rect.top + window.scrollY),
               bottom: Math.round(rect.bottom + window.scrollY),
@@ -82,13 +120,13 @@ export async function auditColorContrast(
       }
     });
 
-    return lowContrast.slice(0, 10); // Report top 10 contrast violations
-  }, minRatio) as LowContrastDefect[];
+    return lowContrast.slice(0, 25);
+  }, defaultMinRatio) as LowContrastDefect[];
 
   const defects: VisualDefect[] = rawList.map((c, idx) => ({
-    id: `low_contrast_${viewport.name}_${idx + 1}`,
+    id: `low_contrast_${viewport.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_${idx + 1}`,
     type: 'LOW_COLOR_CONTRAST',
-    severity: 'MAJOR',
+    severity: c.contrastRatio < 3.0 ? 'CRITICAL' : 'MAJOR',
     viewportName: viewport.name,
     viewportSize: { width: viewport.width, height: viewport.height },
     elementA: {
@@ -107,8 +145,8 @@ export async function auditColorContrast(
     aiTriage: {
       isBug: true,
       confidence: 0.96,
-      description: `Text "${c.text}" has poor contrast (${c.contrastRatio}:1 vs required ${c.requiredRatio}:1). Text color ${c.textColor} is illegible against background ${c.bgColor}.`,
-      suggestedCssFix: `Darken text color or lighten background to achieve at least 4.5:1 contrast ratio (WCAG 1.4.3 AA).`
+      description: `Text "${c.text}" (${c.isLargeText ? 'large text' : 'normal text'}, ${c.fontSizePx}px) has poor contrast (${c.contrastRatio}:1 vs required ${c.requiredRatio}:1). Composited FG ${c.textColor} against BG ${c.bgColor}.`,
+      suggestedCssFix: `Adjust text color or background to achieve at least ${c.requiredRatio}:1 contrast ratio (WCAG 1.4.3 AA).`
     }
   }));
 

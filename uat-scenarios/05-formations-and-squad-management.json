@@ -1,0 +1,170 @@
+{
+  "$schema": "./uat-scenario.schema.json",
+  "name": "05 - Dreamblu Combat Formations & Squad Deployments",
+  "description": "Validates tactical team building on http://localhost:7777/formations: switching between Squad 1 (Active, 2,832 CP), Squad 2, Squad 3, and Squad 4; role filtering by Captain, Tank, Warrior, Mage; and slot assignment stability.",
+  "startUrl": "http://localhost:7777",
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "containerClipping": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "1. Open Dreamblu Fantasy Homepage"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button.save-button",
+      "description": "2. Click Guest Login to open auth modal"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "input[type='email']",
+      "description": "3. Wait for email field"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='email']",
+      "text": "user@example.com",
+      "description": "4. Enter user@example.com"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='password']",
+      "text": "Password123",
+      "description": "5. Enter Password123"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SIGN IN TO ACCOUNT')",
+      "description": "6. Submit login"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('Lucio')",
+      "timeoutMs": 10000,
+      "description": "7. Wait for authenticated user badge 'Lucio ▾'"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/formations",
+      "description": "8. Navigate to Combat Formations (/formations)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "h1",
+      "description": "9. Wait for Formations page header"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "h1",
+      "text": "COMBAT FORMATIONS & DEPLOYMENTS",
+      "description": "10. Assert H1 text: 'COMBAT FORMATIONS & DEPLOYMENTS'"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('SQUAD 1')",
+      "description": "11. Verify Squad 1 tab is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('SQUAD 2')",
+      "description": "12. Verify Squad 2 tab is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('SQUAD 3')",
+      "description": "13. Verify Squad 3 tab is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('SQUAD 4')",
+      "description": "14. Verify Squad 4 tab is visible"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "05-formations-squad1-active",
+      "description": "15. Capture Squad 1 active deployment"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SQUAD 4')",
+      "description": "16. Switch to Squad 4 lineup"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 800,
+      "description": "17. Allow Squad 4 hero slots and CP to update"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "05-formations-squad4-standby",
+      "description": "18. Capture Squad 4 standby lineup"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SQUAD 1')",
+      "description": "19. Switch back to primary Squad 1"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('🛡️ TANK')",
+      "description": "20. Filter roster bench by role: Tank"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 500,
+      "description": "21. Verify tank characters filtered"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('⚔️ WARRIOR')",
+      "description": "22. Filter roster bench by role: Warrior"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 500,
+      "description": "23. Verify warrior characters filtered"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('🔮 MAGE')",
+      "description": "24. Filter roster bench by role: Mage"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 500,
+      "description": "25. Verify mage characters filtered"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('ALL')",
+      "description": "26. Reset bench filters to ALL"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "27. Assert zero horizontal bleed in formations view"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "header.site-topbar",
+      "description": "28. Assert zero topbar clipping"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "05-formations-complete",
+      "description": "29. Capture final verified formations state"
+    }
+  ]
+}

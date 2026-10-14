@@ -1,0 +1,47 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Deep Visual & Layout Invariants Gate Workflow",
+  "description": "Executes comprehensive mathematical layout & runtime invariant assertions at top-of-page and scrolled viewport states.",
+  "template": "visual-regression-invariants",
+  "tags": [
+    "visual",
+    "invariants",
+    "layout",
+    "regression"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to target URL ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_ALL_INVARIANTS",
+      "description": "2. Assert all visual & runtime invariants (overlap, bleed, clipping, occlusion, console) at top of page"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 500,
+      "direction": "down",
+      "description": "3. Scroll down 500px to mid-page section"
+    },
+    {
+      "action": "ASSERT_ALL_INVARIANTS",
+      "description": "4. Assert all visual & runtime invariants at mid-page scroll position"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "visual-invariants-verified",
+      "fullPage": true,
+      "description": "5. Capture full-page visual proof screenshot"
+    }
+  ]
+}

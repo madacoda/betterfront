@@ -21,6 +21,7 @@ export const SUPPORTED_UAT_ACTIONS: UatActionType[] = [
   'WAIT',
   'WAIT_FOR',
   'WAIT_FOR_NAV',
+  'SET_VIEWPORT',
   // User Interactions
   'CLICK',
   'DOUBLE_CLICK',
@@ -35,22 +36,30 @@ export const SUPPORTED_UAT_ACTIONS: UatActionType[] = [
   'SCROLL_TO',
   'FILL_FORM',
   'EXECUTE_SCRIPT',
+  // State & Storage Management
+  'SET_STORAGE',
+  'ASSERT_STORAGE',
   // Assertions & Quality Checks
   'ASSERT_TEXT',
   'ASSERT_VISIBLE',
   'ASSERT_HIDDEN',
   'ASSERT_NOT_VISIBLE',
   'ASSERT_VALUE',
+  'ASSERT_ATTRIBUTE',
+  'ASSERT_CSS',
+  'ASSERT_FOCUSED',
   'ASSERT_COUNT',
   'ASSERT_URL',
   'ASSERT_TITLE',
   'ASSERT_NO_OVERLAP',
   'ASSERT_NO_BLEED',
   'ASSERT_NO_CONSOLE_ERRORS',
+  'ASSERT_NETWORK_OK',
   'ASSERT_UNOCCLUDED',
   'ASSERT_NO_CLIPPING',
   'ASSERT_TOUCH_TARGET',
   'ASSERT_CONTRAST',
+  'ASSERT_ALL_INVARIANTS',
   // Forensics
   'SCREENSHOT'
 ];
@@ -128,7 +137,11 @@ export function validateScenario(rawScenario: any): ValidationResult {
       field: 'startUrl',
       message: 'Missing or empty required property "startUrl". Example: "startUrl": "http://localhost:7777"'
     });
-  } else if (!rawScenario.startUrl.startsWith('http://') && !rawScenario.startUrl.startsWith('https://')) {
+  } else if (
+    !rawScenario.startUrl.startsWith('http://') &&
+    !rawScenario.startUrl.startsWith('https://') &&
+    !rawScenario.startUrl.includes('{{')
+  ) {
     warnings.push({
       field: 'startUrl',
       message: `startUrl "${rawScenario.startUrl}" does not start with http:// or https://. Ensure it is a valid reachable target.`
@@ -235,6 +248,10 @@ export function validateScenario(rawScenario: any): ValidationResult {
       return;
     }
 
+    const hasSelector =
+      (step.selector && typeof step.selector === 'string') ||
+      (Array.isArray(step.fallbackSelectors) && step.fallbackSelectors.length > 0);
+
     // Per-action required argument verification
     switch (action) {
       case 'GOTO':
@@ -243,6 +260,61 @@ export function validateScenario(rawScenario: any): ValidationResult {
             stepIndex: stepNum,
             field: 'url',
             message: `Step [${stepNum}] (${action}): Missing required string property "url". Example: "url": "/login" or "url": "https://example.com"`
+          });
+        }
+        break;
+
+      case 'SET_VIEWPORT':
+        if (typeof step.width !== 'number' || typeof step.height !== 'number' || step.width <= 0 || step.height <= 0) {
+          errors.push({
+            stepIndex: stepNum,
+            field: 'width',
+            message: `Step [${stepNum}] (${action}): Must specify positive numeric "width" and "height". Example: "width": 390, "height": 844`
+          });
+        }
+        break;
+
+      case 'SET_STORAGE':
+      case 'ASSERT_STORAGE':
+        if (!step.key || typeof step.key !== 'string') {
+          errors.push({
+            stepIndex: stepNum,
+            field: 'key',
+            message: `Step [${stepNum}] (${action}): Missing required string property "key" for storage item.`
+          });
+        }
+        break;
+
+      case 'ASSERT_ATTRIBUTE':
+        if (!hasSelector) {
+          errors.push({
+            stepIndex: stepNum,
+            field: 'selector',
+            message: `Step [${stepNum}] (${action}): Missing required "selector".`
+          });
+        }
+        if (!step.attribute || typeof step.attribute !== 'string') {
+          errors.push({
+            stepIndex: stepNum,
+            field: 'attribute',
+            message: `Step [${stepNum}] (${action}): Missing required string property "attribute" (e.g. "aria-expanded", "href").`
+          });
+        }
+        break;
+
+      case 'ASSERT_CSS':
+        if (!hasSelector) {
+          errors.push({
+            stepIndex: stepNum,
+            field: 'selector',
+            message: `Step [${stepNum}] (${action}): Missing required "selector".`
+          });
+        }
+        if (!step.property || typeof step.property !== 'string') {
+          errors.push({
+            stepIndex: stepNum,
+            field: 'property',
+            message: `Step [${stepNum}] (${action}): Missing required string property "property" (e.g. "display", "position").`
           });
         }
         break;
@@ -258,7 +330,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
       case 'ASSERT_HIDDEN':
       case 'ASSERT_NOT_VISIBLE':
       case 'ASSERT_UNOCCLUDED':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',
@@ -268,7 +340,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
         break;
 
       case 'ASSERT_TOUCH_TARGET':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',
@@ -285,7 +357,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
         break;
 
       case 'ASSERT_CONTRAST':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',
@@ -312,7 +384,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
         break;
 
       case 'TYPE':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',
@@ -329,7 +401,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
         break;
 
       case 'SELECT':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',
@@ -356,7 +428,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
         break;
 
       case 'WAIT_FOR':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',
@@ -373,7 +445,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
         break;
 
       case 'ASSERT_TEXT':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',
@@ -390,7 +462,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
         break;
 
       case 'ASSERT_VALUE':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',
@@ -407,7 +479,7 @@ export function validateScenario(rawScenario: any): ValidationResult {
         break;
 
       case 'ASSERT_COUNT':
-        if (!step.selector || typeof step.selector !== 'string') {
+        if (!hasSelector) {
           errors.push({
             stepIndex: stepNum,
             field: 'selector',

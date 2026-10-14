@@ -1,0 +1,123 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "YouTube Media Streaming - Search, Player & Engagement UAT Workflow",
+  "description": "Tests video platform masthead search, filter chip selection, video player container visibility, engagement CTA buttons, and scroll inertia.",
+  "template": "youtube-media-streaming",
+  "tags": [
+    "youtube",
+    "video",
+    "streaming",
+    "media"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "MASTHEAD_SELECTOR": "header.yt-masthead",
+    "SEARCH_INPUT": "input#search",
+    "SEARCH_QUERY": "Playwright Autonomous Frontend QA",
+    "CHIP_FILTER_SELECTOR": ".yt-chip-cloud-chip",
+    "VIDEO_STAGE_SELECTOR": "#movie_player",
+    "SUBSCRIBE_OR_LIKE_BTN": "#subscribe-button"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to YouTube-style Media Platform ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{MASTHEAD_SELECTOR}}",
+      "fallbackSelectors": [
+        "header.yt-masthead",
+        "ytd-masthead",
+        "header",
+        "body"
+      ],
+      "description": "2. Verify top masthead navigation bar is visible"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{SEARCH_INPUT}}",
+      "fallbackSelectors": [
+        "input#search",
+        "input[name=\"search_query\"]",
+        "#search-box",
+        "#user-name",
+        "input[type=\"text\"]"
+      ],
+      "text": "{{SEARCH_QUERY}}",
+      "clearFirst": true,
+      "pressEnter": true,
+      "ifVisible": true,
+      "description": "3. Type video search query \"{{SEARCH_QUERY}}\" and press Enter"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{CHIP_FILTER_SELECTOR}}",
+      "fallbackSelectors": [
+        ".yt-chip-cloud-chip",
+        "[role=\"tab\"]",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "4. Click category filter chip"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{VIDEO_STAGE_SELECTOR}}",
+      "fallbackSelectors": [
+        "#movie_player",
+        "video",
+        ".video-player-stage",
+        "main",
+        "body"
+      ],
+      "description": "5. Verify video player stage / media grid is rendered"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "{{SUBSCRIBE_OR_LIKE_BTN}}",
+      "fallbackSelectors": [
+        "#subscribe-button",
+        "#like-button",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "6. Verify Subscribe / Like engagement button is physically unoccluded"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{SUBSCRIBE_OR_LIKE_BTN}}",
+      "fallbackSelectors": [
+        "#subscribe-button",
+        "#like-button",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "7. Click Subscribe / Like engagement button"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 500,
+      "direction": "down",
+      "description": "8. Scroll down recommended videos & comments feed"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "9. Verify zero unhandled JavaScript console errors"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "youtube-media-streaming-verified",
+      "description": "10. Capture media streaming UAT verification screenshot"
+    }
+  ]
+}

@@ -1,0 +1,230 @@
+{
+  "$schema": "./uat-scenario.schema.json",
+  "name": "04 - Dreamblu Real-Time Battle Engine & Critical Combat Invariants",
+  "description": "Exhaustive, high-rigor stress test of the 60 FPS Canvas combat engine, live tick loops, auto-combat, speed multipliers (1X/2X/3X), pause/resume state stability, hero ultimate skill activation, tactical grid view switching, combat event logging, damage analytics, and V1 stage sweep on http://localhost:7777/battle-v2.",
+  "startUrl": "http://localhost:7777",
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "containerClipping": true,
+    "consoleExceptions": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "1. Open Dreamblu Fantasy Homepage"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button.save-button",
+      "description": "2. Click Guest Login to open auth modal"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "input[type='email']",
+      "description": "3. Wait for email field"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='email']",
+      "text": "user@example.com",
+      "description": "4. Enter user@example.com"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='password']",
+      "text": "Password123",
+      "description": "5. Enter Password123"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SIGN IN TO ACCOUNT')",
+      "description": "6. Submit login"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('Lucio')",
+      "timeoutMs": 10000,
+      "description": "7. Wait for authenticated user badge 'Lucio ▾'"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/battle-v2",
+      "description": "8. Launch Real-Time Battle Engine V2 (/battle-v2)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "canvas",
+      "timeoutMs": 12000,
+      "description": "9. Wait for 60 FPS Combat Canvas to initialize and render"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "canvas",
+      "description": "10. Assert battle simulation canvas is active and visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Team 1')",
+      "description": "11. Verify active combat squad: Team 1 (6/7 Heroes, 2,832 CP)"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Canvas (60 FPS)')",
+      "description": "12. Verify Canvas rendering mode selector is active"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Tactical Grid')",
+      "description": "13. Verify Tactical Grid view mode button is available"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Forfeit')",
+      "description": "14. Verify Forfeit surrender button is present"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "04-battle-initial-engagement",
+      "description": "15. Capture initial combat engagement and squad deployment"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('Tactical Grid')",
+      "description": "16. Switch rendering mode: Canvas -> Tactical Grid"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 1000,
+      "description": "17. Allow Tactical Grid coordinate overlay to activate"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "04-battle-tactical-grid-mode",
+      "description": "18. Capture Tactical Grid combat view"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('Canvas (60 FPS)')",
+      "description": "19. Switch back to Canvas (60 FPS) high-framerate mode"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 800,
+      "description": "20. Confirm Canvas resumes without frame drop"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('AUTO COMBAT:')",
+      "description": "21. Toggle Auto Combat state (Test manual vs autonomous AI)"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 600,
+      "description": "22. Verify combat loop adapts to state change"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('AUTO COMBAT:')",
+      "description": "23. Re-enable autonomous AI auto combat"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 450,
+      "description": "24. Scroll down to inspect hero controls, combat logs, and telemetry"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 8000,
+      "description": "25. CRITICAL STRESS DURATION: Run real-time combat simulation under high tick rate for 8 continuous seconds"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "04-battle-mid-combat-stress",
+      "description": "26. Capture mid-battle state under active projectile physics & damage numbers"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('TICKS')",
+      "optional": true,
+      "description": "27. Inspect combat engine event log: TICKS"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 500,
+      "description": "28. Allow tick stream telemetry to update"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SUMMARY')",
+      "optional": true,
+      "description": "29. Switch combat log to SUMMARY analytical view"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('OUTBOUND')",
+      "optional": true,
+      "description": "30. Inspect hero outbound damage telemetry"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "04-battle-telemetry-and-logs",
+      "description": "31. Capture forensic screenshot of combat logs and damage distribution"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 500,
+      "direction": "up",
+      "description": "32. Scroll back up to combat viewport"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/battle",
+      "description": "33. Navigate to Combat Engine V1 (/battle) for cross-engine regression audit"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('Stage Sweep')",
+      "description": "34. Wait for V1 combat interface and Stage Sweep trigger"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Stage Sweep')",
+      "description": "35. Verify Stage Sweep utility is available"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('Stage Sweep')",
+      "description": "36. Execute Stage Sweep instant clear"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 1500,
+      "description": "37. Allow stage sweep calculation and loot dispersal"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "38. Assert zero horizontal mobile bleed in combat interface"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "header.site-topbar",
+      "description": "39. Assert topbar has no text descender clipping"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "04-battle-stage-sweep-complete",
+      "description": "40. Capture verified stage sweep state"
+    }
+  ]
+}

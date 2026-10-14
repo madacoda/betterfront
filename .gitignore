@@ -1,13 +1,31 @@
+# Dependencies & Build Outputs
 node_modules/
 dist/
+*.tsbuildinfo
+
+# Runtime Caches & Coverage
 .cache/
 coverage/
 *.log
+
+# Environment Variables
 .env
 .env.local
+.env.*.local
+
+# BetterFront Generated Reports & Artifacts
+betterfront.config.json
 betterfront-report.html
 betterfront-summary.json
 betterfront-artifacts/
 tests/test-artifacts/
 tests/test-report.html
 tests/test-summary.json
+tests/test-report.sarif.json
+tests/test-report.junit.xml
+tests/test-report.md
+tests/test-auto-generated-uat.json
+
+# OS & Editor Metadata
+.DS_Store
+Thumbs.db

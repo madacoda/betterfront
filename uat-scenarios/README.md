@@ -6,31 +6,82 @@ Every scenario file in this directory is backed by [`uat-scenario.schema.json`](
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Zero-Config to Full Customization)
 
-### 1. In-Editor Autocompletion & Validation
+### 0. Zero-Config Auto-UAT (No Test Authoring Required!)
+Point BetterFront directly at any live URL (such as Dreamblu on `http://localhost:7777` or any web application). BetterFront automatically inspects the live DOM, discovers topbars, brand lockups, HUD widgets, buttons, and forms, synthesizes a complete UAT workflow, and executes it on the spot:
+
+```bash
+# Run zero-config auto-discovered UAT directly against any URL (and optionally save the generated JSON!)
+npx betterfront uat http://localhost:7777 --save-scenario ./uat-scenarios/my-auto-uat.json
+
+# Or generate a customizable UAT JSON file from a live URL without executing immediately
+npx betterfront uat:generate http://localhost:7777 -o ./uat-scenarios/dreamblu-auto.json
+
+# Or scaffold a full project config + 10 customizable workflow templates in one command
+npx betterfront init http://localhost:7777
+```
+
+### 1. Run Any of the 10 Built-In Customizable Workflow Templates Out-of-the-Box
+You don't need to write tests from scratch—choose from 10 battle-tested workflow templates and override variables on the fly with `--url` and `--var KEY=VALUE`:
+
+```bash
+# List all 10 built-in workflow templates and their customizable variables
+npx betterfront uat --list-templates
+
+# Run the RPG / Game HUD workflow (Dreamblu ready!) out of the box
+npx betterfront uat rpg-game-hud --url http://localhost:7777
+
+# Run the Form Validation & Chaos workflow with custom variable overrides
+npx betterfront uat form-validation-chaos --url http://localhost:8912 --var TEST_EMAIL=hero@dreamblu.io --var TEST_NAME="Aria Vanguard"
+
+# Run the 5-Breakpoint Live Responsive Matrix workflow (320px -> 1920px)
+npx betterfront uat responsive-breakpoint-matrix --url http://localhost:7777
+
+# Run an entire directory of UAT workflows as a unified suite
+npx betterfront uat ./uat-scenarios/templates --url http://localhost:7777
+```
+
+| Template ID | Category | What It Tests Out-of-the-Box |
+| :--- | :--- | :--- |
+| **`universal-smoke`** | Universal | Landmarks, heading, CTA unoccluded hit-target, human scroll, network health & console hygiene. |
+| **`rpg-game-hud`** / **`dreamblu-rpg-hud`** | Gaming & HUD | RPG topbar (`header.site-topbar`), brand lockup (`a.brand-lockup`), HUD widgets, hover, clipping & bleed. |
+| **`form-validation-chaos`** | Forms & Auth | Typing, clear/refill, `FILL_FORM` synthetic Faker data, submit & feedback verification. |
+| **`auth-login-session`** | Forms & Auth | `SET_STORAGE` / `ASSERT_STORAGE` session token seeding, credential typing & login submit. |
+| **`ecommerce-checkout`** | E-Commerce & SaaS | Catalog search, Add-to-Cart CTA, `GUEST_CHECKOUT` form auto-fill & network status check. |
+| **`navigation-modals-drawers`** | Universal | Navbar traversal, modal trigger click, `Escape` key dismissal & zombie backdrop occlusion check. |
+| **`responsive-breakpoint-matrix`** | Responsive & Visual | Live `SET_VIEWPORT` resizes across `320px`, `390px`, `820px`, `1366px`, and `1920px`. |
+| **`accessibility-keyboard-ergonomics`** | Accessibility | `Tab` / `Shift+Tab` keyboard focus (`ASSERT_FOCUSED`), WCAG AA contrast & touch target size. |
+| **`crud-dashboard-workflow`** | E-Commerce & SaaS | Component counts (`ASSERT_COUNT`), computed CSS (`ASSERT_CSS`) & API network checks (`ASSERT_NETWORK_OK`). |
+| **`visual-regression-invariants`** | Responsive & Visual | `ASSERT_ALL_INVARIANTS` (overlap, bleed, clipping, occlusion, console) across scroll positions. |
+
+### 2. In-Editor Autocompletion & Validation
 Add `"$schema": "./uat-scenario.schema.json"` at the very top of any scenario JSON file:
 
 ```json
 {
   "$schema": "./uat-scenario.schema.json",
-  "name": "My New Feature Flow",
+  "name": "My Custom Feature Flow",
   "description": "Verifies checkout and topbar layout",
-  "startUrl": "http://localhost:7777",
+  "startUrl": "{{BASE_URL}}",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "PRIMARY_CTA": "#cta-button"
+  },
   "steps": []
 }
 ```
 
-When you type `"action": ""` inside `steps`, your editor will suggest all 20+ available actions with full descriptions and documentation.
+When you type `"action": ""` inside `steps`, your editor will suggest all 38 available actions with full descriptions and documentation.
 
-### 2. Validating a Scenario Before Execution
+### 3. Validating a Scenario Before Execution
 To instantly check if a scenario has any typos, missing selectors, or invalid fields without launching a browser:
 
 ```bash
 node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --validate-only
 ```
 
-### 3. Executing a Scenario & Recording Video
+### 4. Executing a Scenario & Recording Video
 ```bash
 # Standard headless execution
 node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json
@@ -48,31 +99,29 @@ node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed --slowmo
 node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --viewport desktop_fhd
 ```
 
-### 4. Interactive Live Action Recording (No Manual JSON Writing!)
+### 5. Interactive Live Action Recording (No Manual JSON Writing!)
 Don't want to write JSON by hand? You can record your live clicks, inputs, and navigation directly in the browser:
 
 ```bash
 # Launch interactive browser recorder
 node dist/cli.js record http://localhost:7777 -o ./uat-scenarios/my-recorded-flow.json
 ```
-- Click through your web app / game.
-- Inputs, dropdowns, and page navigations are logged in real-time.
-- Simply **close the browser window** when done: BetterFront automatically saves a formatted scenario JSON with the schema link, ready to run or edit!
 
 ---
 
-## 📑 Action Quick-Reference Master Table
+## 📑 Action Quick-Reference Master Table (38 Actions)
 
 | Action | Required Fields | Optional Fields | Description |
 | :--- | :--- | :--- | :--- |
-| **`GOTO`** | `url` | `timeoutMs` | Navigates to a page (supports absolute URLs or relative paths). |
+| **`GOTO`** | `url` | `timeoutMs` | Navigates to a page (supports absolute URLs, relative paths, and `{{VARIABLES}}`). |
 | **`RELOAD`** | *none* | `timeoutMs` | Reloads the current page (useful for testing state persistence). |
-| **`CLICK`** | `selector` | `timeoutMs` | Natural Bézier curve human mouse move and click with fallback. |
-| **`DOUBLE_CLICK`** | `selector` | `timeoutMs` | Performs a rapid double-click on target element. |
-| **`HOVER`** | `selector` | `timeoutMs` | Moves cursor along Bézier path to hover (triggers CSS `:hover` and menus). |
+| **`SET_VIEWPORT`** | `width`, `height` | `isMobile`, `name` | Dynamically resizes browser viewport mid-scenario to test responsive reflow. |
+| **`CLICK`** | `selector` | `fallbackSelectors`, `timeoutMs` | Natural Bézier curve human mouse move and click with fallback. |
+| **`DOUBLE_CLICK`** | `selector` | `fallbackSelectors`, `timeoutMs` | Performs a rapid double-click on target element. |
+| **`HOVER`** | `selector` | `fallbackSelectors`, `timeoutMs` | Moves cursor along Bézier path to hover (triggers CSS `:hover` and menus). |
 | **`TYPE`** | `selector`, `text` | `clearFirst`, `pressEnter`, `delayMs` | Natural cadence typing with optional pre-clearing and Enter key. |
 | **`CLEAR`** | `selector` | `timeoutMs` | Empties an `<input>` or `<textarea>` element. |
-| **`PRESS_KEY`** | `key` | `selector` | Dispatches keyboard press (e.g. `'Enter'`, `'Escape'`, `'Tab'`, `'Space'`). |
+| **`PRESS_KEY`** | `key` | `selector` | Dispatches keyboard press (e.g. `'Enter'`, `'Escape'`, `'Tab'`, `'Shift+Tab'`). |
 | **`SELECT`** | `selector`, `value` or `text` | `timeoutMs` | Selects an option from a native HTML `<select>` dropdown. |
 | **`CHECK`** | `selector` | `timeoutMs` | Checks a checkbox or radio button input. |
 | **`UNCHECK`** | `selector` | `timeoutMs` | Unchecks a checkbox input. |
@@ -81,21 +130,28 @@ node dist/cli.js record http://localhost:7777 -o ./uat-scenarios/my-recorded-flo
 | **`WAIT`** | *none* | `waitMs` | Explicit pause in milliseconds (default 1000ms). |
 | **`WAIT_FOR`** | `selector` | `state`, `timeoutMs` | Waits for element DOM state (`'visible'`, `'hidden'`, `'attached'`, `'detached'`). |
 | **`WAIT_FOR_NAV`**| *none* | `url`, `timeoutMs` | Waits for page navigation or URL pattern to complete. |
-| **`FILL_FORM`** | *none* | `profile` | Autonomously detects inputs and populates with realistic Faker data. |
-| **`ASSERT_VISIBLE`** | `selector` | `timeoutMs` | Asserts element exists and is visually rendered in the viewport. |
+| **`FILL_FORM`** | *none* | `profile` | Autonomously populates visible inputs (`GUEST_CHECKOUT`, `CONTACT_FORM`, `SIGNUP`, `SEARCH`). |
+| **`SET_STORAGE`** | `key` | `value`, `storageType` | Seeds `localStorage` or `sessionStorage` state. |
+| **`ASSERT_STORAGE`** | `key` | `value`, `storageType`, `exact` | Asserts `localStorage` or `sessionStorage` item exists and matches value. |
+| **`ASSERT_VISIBLE`** | `selector` | `fallbackSelectors`, `timeoutMs` | Asserts element exists and is visually rendered in the viewport. |
 | **`ASSERT_HIDDEN`** | `selector` | `timeoutMs` | Asserts element is hidden or detached (e.g. modal closed, loader gone). |
 | **`ASSERT_TEXT`** | `selector`, `text` | `exact`, `timeoutMs` | Verifies element text contains expected string (or exact match). |
 | **`ASSERT_VALUE`** | `selector`, `value`/`text`| `timeoutMs` | Verifies input field or select dropdown value matches expected. |
+| **`ASSERT_ATTRIBUTE`** | `selector`, `attribute` | `value`, `exact` | Asserts HTML/ARIA attribute (e.g. `aria-expanded="true"`, `href`) on element. |
+| **`ASSERT_CSS`** | `selector`, `property` | `value`, `exact` | Asserts computed CSS style property (e.g. `display`, `position`) on element. |
+| **`ASSERT_FOCUSED`** | *none* | `selector` | Asserts target element (or any interactive control) holds active keyboard focus. |
 | **`ASSERT_COUNT`** | `selector`, `count` | `operator` | Asserts count of matching DOM elements (`'equals'`, `'greaterThan'`, `'lessThan'`). |
 | **`ASSERT_URL`** | `url` | *none* | Asserts current browser URL contains expected path or pattern. |
 | **`ASSERT_TITLE`** | `text` | *none* | Asserts page title contains expected string. |
 | **`ASSERT_NO_OVERLAP`**| *none* | *none* | Runs mathematical text-on-text collision detection at this exact step. |
 | **`ASSERT_NO_BLEED`** | *none* | *none* | Asserts zero horizontal page overflow on mobile viewports. |
 | **`ASSERT_NO_CONSOLE_ERRORS`**| *none*| *none* | Asserts zero unhandled JavaScript exceptions or console errors. |
-| **`ASSERT_UNOCCLUDED`** | `selector` | `timeoutMs` | Verifies element is physically reachable via hit-testing at center point without sticky navbar/modal occlusion. |
+| **`ASSERT_NETWORK_OK`** | *none* | `urlPattern` | Asserts zero failed (4xx/5xx or aborted) network requests. |
+| **`ASSERT_UNOCCLUDED`** | `selector` | `timeoutMs` | Verifies element is physically reachable via hit-testing without sticky navbar/modal occlusion. |
 | **`ASSERT_NO_CLIPPING`**| *none* | `selector`, `timeoutMs` | Verifies element or page has zero hidden text truncation/starvation (`scrollHeight > clientHeight`). |
 | **`ASSERT_TOUCH_TARGET`**| `selector` | `minPx` (default 44) | Verifies element meets touch target ergonomics ($44\times 44\text{px}$ per Apple HIG / WCAG 2.5.5). |
 | **`ASSERT_CONTRAST`** | `selector` | `minRatio` (default 4.5)| Verifies element text contrast ratio meets WCAG AA standards. |
+| **`ASSERT_ALL_INVARIANTS`** | *none* | *none* | Runs overlap, mobile bleed, container clipping, interactive occlusion, and console checks all at once. |
 | **`SCREENSHOT`** | *none* | `name`, `fullPage` | Captures high-res screenshot to `betterfront-artifacts/screenshots/`. |
 | **`EXECUTE_SCRIPT`**| `script` | *none* | Evaluates arbitrary JavaScript expression in page context. |
 

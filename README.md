@@ -1,57 +1,156 @@
 # 🛡️ BetterFront
 
-> **The Gold-Standard Autonomous Frontend Quality Assurance & Production-Readiness Engine**  
-> *Simulate real human interaction, catch critical visual layout defects, track layout shifts (CLS), audit Core Web Vitals, record full-motion interaction videos, and automate production quality gates.*
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8%2B-3178C6.svg)](./tsconfig.json)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-339933.svg)](./package.json)
+[![Playwright](https://img.shields.io/badge/Engine-Playwright-2EAD33.svg)](https://playwright.dev)
+
+> **The Gold-Standard Autonomous Frontend Quality Assurance, Visual Layout Geometry & Customizable UAT Workflow Engine**  
+> *Simulate real human interaction, catch critical visual layout defects (`Range.getClientRects()` AABB collisions, mobile horizontal bleed, container clipping, z-index occlusion), track layout shifts (CLS), audit Core Web Vitals, record full-motion interaction videos, and execute zero-config or customizable UAT workflows across any web application.*
 
 ---
 
-## 🌟 The Vision
+## 🌟 Why BetterFront?
 
-Modern web development tools tell you if an element is present in the DOM (`toBeVisible()`), but they are completely blind to real human user experience disasters:
-- 💥 **Text-on-Text Collision:** Two text nodes colliding and becoming unreadable because of responsive breakpoint collapse.
-- 📐 **Mobile Horizontal Viewport Bleed:** Sideways wobble on mobile screens (375px/390px) caused by `width: 100vw` or unconstrained images.
-- 🗂️ **Component Occlusion & Clipping:** Fixed-height containers cutting off text descenders, or sticky headers covering page content on anchor scroll.
-- 📉 **Cumulative Layout Shift (CLS):** Content jumping 120px down right as a user attempts to click a button.
-- 🤖 **Robotic Testing Blindspots:** Instantaneous teleports that never trigger real hover states, focus traps, or debounced search race conditions.
-- 🎥 **Visual Evidence Gap:** Lack of continuous full-motion video recordings and annotated forensic screenshot overlays.
+Traditional E2E tools only tell you if a DOM node exists (`expect(locator).toBeVisible()`), remaining completely blind to real human UX failures:
+- 💥 **Text-on-Text Collision:** Two text nodes overlapping and becoming unreadable after a responsive breakpoint collapse.
+- 📐 **Mobile Horizontal Viewport Bleed:** Sideways wobble on mobile screens (`375px`/`390px`) caused by `width: 100vw` or unconstrained flex/grid children.
+- 🗂️ **Component Occlusion & Container Clipping:** Fixed-height containers clipping text descenders, or sticky headers/backdrops blocking clicks at `document.elementFromPoint(x, y)`.
+- 📉 **Cumulative Layout Shift (CLS):** Content jumping down right as a user attempts to click a button.
+- 🤖 **Robotic Testing Blindspots:** Instantaneous teleports that bypass hover states, focus rings, or debounced input race conditions.
 
-**BetterFront** bridges the gap between mechanical assertions and human visual perception by combining:
+**BetterFront** bridges mechanical assertions and human visual perception:
 1. **Mathematical In-Browser DOM Geometry** (`Range.getClientRects()`, AABB collision, Stacking Context trees).
-2. **Cognitive Multimodal Vision AI** (Gemini 2.0 Flash / Claude 3.5 Sonnet) to filter intentional UI design patterns with zero false positives.
-3. **Autonomous Human Kinematics** (Bézier mouse trajectories, Fitts's law, typing cadence with typos, scroll inertia).
-4. **Real-Time Layout Instability Attribution** (`PerformanceObserver` + CDP for node-level CLS tracking).
-5. **Visual Flight Recorder** (Continuous 60fps `.webm` video recording, Playwright `.zip` traces, and annotated screenshot overlays).
-6. **Declarative UAT Scenario Engine** (Clean JSON checklists with human-like execution).
-7. **Production-Ready Quality Gates** (Objective 0–100 score + zero-tolerance blocker enforcement).
+2. **2-Stage Cognitive Multimodal Vision Triage** (Gemini 2.0 Flash / Claude 3.5 Sonnet + deterministic heuristic fallback) to distinguish intentional UI patterns (e.g., avatar stacks, badges) from real layout bugs.
+3. **Physics-Based Human Kinematics** (Cubic Bézier mouse trajectories, Fitts's Law velocity profiling, human typing cadence, momentum scrolling).
+4. **Zero-Config & Customizable UAT Engine** (38 declarative actions, `{{VARIABLE}}` interpolation, resilient `fallbackSelectors`, live DOM auto-discovery, and 14 built-in industry templates).
+5. **Enterprise CI/CD Exporters** (Interactive Dark-Mode HTML Dashboards, SARIF 2.1.0 for GitHub Code Scanning, JUnit XML, GitHub PR Markdown, `.webm` video & Playwright `.zip` traces).
 
 ---
 
-## 📚 Architectural Strategies & Deep Research Suite
+## 🏗️ Modular SOLID Architecture
 
-All deep architectural research, comparative benchmarks, formulas, algorithms, and engineering specifications are located in the [`/strategies`](./strategies) folder:
+BetterFront is engineered with strict domain boundaries, **SOLID** principles, and high-concurrency `Promise.all` pipelines. See **[ARCHITECTURE.md](./ARCHITECTURE.md)** for full diagrams and design pattern documentation.
 
-| Document | Description |
-| :--- | :--- |
-| 📖 **[00: Master Index & Executive Architecture Summary](./strategies/00_MASTER_INDEX_AND_EXECUTIVE_SUMMARY.md)** | Executive vision, system architecture diagram, and core tenets. |
-| ⚡ **[01: Tech Stack Evaluation & Recommendations](./strategies/01_STACK_EVALUATION_AND_RECOMMENDATIONS.md)** | Exhaustive benchmarks (Playwright vs Cypress vs Puppeteer; Stagehand vs Midscene; Lighthouse vs CDP). |
-| 🧑‍💻 **[02: Autonomous Human-Like Agent Simulation](./strategies/02_AUTONOMOUS_HUMAN_USER_SIMULATION.md)** | Physics-based motor kinematics (Bézier curves, Fitts's Law), cognitive traversal, and chaos personas. |
-| 👁️ **[03: Visual Defect & Layout Collision Engine](./strategies/03_VISUAL_DEFECT_DETECTION_ENGINE.md)** | Mathematics of text/component overlap, mobile horizontal bleed, container clipping, and the 2-stage VLM pipeline. |
-| 📱 **[04: Responsiveness & Cross-Device Matrix](./strategies/04_RESPONSIVENESS_AND_DEVICE_MATRIX.md)** | Multi-device matrix (280px to 3840px), fluid breakpoint sweep scanning, 200% zoom stress, and touch target standards. |
-| 🚀 **[05: Performance, Lighthouse & Optimization Engine](./strategies/05_PERFORMANCE_LIGHTHOUSE_AND_OPTIMIZATION.md)** | Programmatic Lighthouse, real-time CLS attribution script with `PerformanceObserver`, and remediation engine. |
-| 🚦 **[06: UAT & Production-Readiness Quality Gate](./strategies/06_UAT_AND_PRODUCTION_READINESS_STANDARD.md)** | The 0–100 Health Index, Hard Blockers vs Soft Warnings, declarative UAT journeys, and CI/CD PR gating. |
-| 🏗️ **[07: System Architecture & Implementation Blueprint](./strategies/07_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION_BLUEPRINT.md)** | Modular codebase organization, `betterfront.config.ts` specification, and TypeScript interfaces. |
-| 🧪 **[08: Ready-to-Run Proof-of-Concept & Scaffolding](./strategies/08_READY_TO_RUN_POC_AND_SCAFFOLDING.md)** | Production-ready, runnable TypeScript modules and CLI scaffolding ready to test immediately. |
-| 📋 **[09: Anomaly Catalog & Declarative UAT Checklist](./strategies/09_ANOMALY_CATALOG_AND_UAT_CHECKLIST.md)** | Comprehensive 12-anomaly catalog, granular ON/OFF toggles, declarative UAT scenario schema, and QA sign-off checklist. |
+```text
+src/
+├── types/          # Segregated domain contracts (defects, config, reporting, uat)
+├── config/         # Zod schema validation, presets (quick-smoke, pr-check, production-gate, chaos-monkey)
+├── core/           # Reusable BrowserPool, CaptureRecorder (video/trace/overlays), Concurrent AuditRunner
+├── agent/          # Fitts's Law Bézier kinematics, human typist, momentum scroller, Faker form filler, crawler
+├── inspectors/
+│   ├── layout/     # textCollision, horizontalBleed, containerClipping, interactiveOcclusion, unsizedMedia, breakpointSweeper
+│   ├── a11y/       # axeRunner (WCAG 2.2 AA), colorContrast, touchTargets (44x44px), textZoom (200%)
+│   ├── perf/       # clsObserver (PerformanceObserver session windows), lighthouseRunner
+│   └── network/    # linkChecker (empty href & dead #anchor inspector)
+├── uat/
+│   ├── actions/    # Command/Strategy handlers (navigationAndState, interaction, assertion)
+│   ├── templates/  # Open-Closed registry + 14 built-in workflows (coreTemplates, domainVariants, workflowTemplates)
+│   ├── interpolation.ts    # {{VAR}} template engine & relative URL resolver
+│   ├── selectorResolver.ts # Primary + fallbackSelectors resolution & viewport filtering
+│   ├── generator.ts        # Zero-config live DOM UAT scenario synthesizer
+│   ├── validator.ts        # Pre-flight validator with Levenshtein "Did you mean?" suggestions
+│   └── uatRunner.ts        # Multi-viewport UAT orchestrator
+├── vision/         # Multimodal VLM client (Gemini / Anthropic) + deterministic heuristic fallback
+└── reporter/       # Scoring engine, Audit & UAT HTML dashboards, SARIF 2.1.0, JUnit XML, PR Markdown, JSON
+```
+
+---
+
+## 🧪 Zero-Config Auto-UAT & 14 Customizable Workflow Templates
+
+BetterFront is ready to use **out of the box from the first second**—no manual test writing required!
+
+### 1. Zero-Config Live Auto-UAT
+Point BetterFront at any live URL. BetterFront inspects the live DOM, discovers navigation landmarks, headings, interactive controls, and forms, synthesizes a complete UAT scenario, and executes it immediately:
+```bash
+# Auto-discover & execute UAT directly from any live URL
+npx betterfront uat http://localhost:7777 --save-scenario ./uat-scenarios/auto-discovered.json
+
+# Scaffold betterfront.config.json + all 14 customizable workflow templates to disk
+npx betterfront init http://localhost:7777
+```
+
+### 2. 14 Built-In Customizable Workflow Templates (Including Major Platform Variants)
+Run any of the **14 built-in templates** directly by ID or alias (`dreamblu`, `shopee`, `tokopedia`, `youtube`, `google`) and customize any selector or input payload via `--url` and `--var KEY=VALUE`:
+
+```bash
+# List all 14 built-in workflow templates & their customizable variables
+npx betterfront uat --list-templates
+
+# Run major platform & domain workflow variants out-of-the-box
+npx betterfront uat dreamblu  --url http://localhost:7777
+npx betterfront uat shopee    --url http://localhost:8080/shopee    --var SEARCH_QUERY="wireless earbuds"
+npx betterfront uat tokopedia --url http://localhost:8080/tokopedia --var SEARCH_QUERY="mechanical keyboard"
+npx betterfront uat youtube   --url http://localhost:8080/youtube   --var SEARCH_QUERY="web performance"
+npx betterfront uat google    --url http://localhost:8080/google    --var SEARCH_QUERY="BetterFront QA"
+
+# Run the 5-Breakpoint Live Responsive Matrix workflow (320px -> 1920px)
+npx betterfront uat responsive-breakpoint-matrix --url http://localhost:7777
+```
+
+| Template ID (and Shorthand Alias) | Category | What It Tests Out-of-the-Box |
+| :--- | :--- | :--- |
+| **`universal-smoke`** | Smoke & Core | Landmarks, heading, CTA unoccluded hit-target, human scroll, network health & console hygiene. |
+| **`rpg-game-hud`** (`dreamblu`) | Gaming & HUD | RPG topbar (`header.site-topbar`), brand lockup (`a.brand-lockup`), HUD widgets, hover, clipping & bleed. |
+| **`shopee-marketplace`** (`shopee`) | E-Commerce & SaaS | Flash-sale header, search bar query, product grid cards, Add-to-Cart action, and mobile bleed invariants. |
+| **`tokopedia-commerce`** (`tokopedia`) | E-Commerce & SaaS | Sticky search header, category pills, merchant product cards, Keranjang action, and contrast/clipping checks. |
+| **`youtube-media-streaming`** (`youtube`) | Media & Search | Masthead search query, primary video player container, transport controls, filter chips, and feed cards. |
+| **`google-search-portal`** (`google`) | Media & Search | Search bar focus, query typing, search action trigger, Keyboard `Tab` ergonomics, and all 12 invariants. |
+| **`form-validation-chaos`** | Forms & Auth | Typing, clear/refill, `FILL_FORM` synthetic Faker data, submit & feedback verification. |
+| **`auth-login-session`** | Forms & Auth | `SET_STORAGE` / `ASSERT_STORAGE` session token seeding, credential typing & login submit. |
+| **`ecommerce-checkout`** | E-Commerce & SaaS | Catalog search, Add-to-Cart CTA, `GUEST_CHECKOUT` form auto-fill & network status check. |
+| **`navigation-modals-drawers`** | Smoke & Core | Navbar traversal, modal trigger click, `Escape` key dismissal & zombie backdrop occlusion check. |
+| **`responsive-breakpoint-matrix`** | Responsive & Visual | Live `SET_VIEWPORT` resizes across `320px`, `390px`, `820px`, `1366px`, and `1920px`. |
+| **`accessibility-keyboard-ergonomics`** | Accessibility | `Tab` / `Shift+Tab` keyboard focus (`ASSERT_FOCUSED`), WCAG AA contrast & touch target size. |
+| **`crud-dashboard-workflow`** | E-Commerce & SaaS | Component counts (`ASSERT_COUNT`), computed CSS (`ASSERT_CSS`) & API network checks (`ASSERT_NETWORK_OK`). |
+| **`visual-regression-invariants`** | Responsive & Visual | `ASSERT_ALL_INVARIANTS` (overlap, bleed, clipping, occlusion, console) across scroll positions. |
+
+---
+
+## 💻 Programmatic TypeScript / Node.js SDK
+
+BetterFront exports a clean, strictly-typed programmatic SDK with `BrowserPool` reuse for high-throughput test suites:
+
+```ts
+import {
+  BrowserPool,
+  audit,
+  defineConfig,
+  runUat,
+  runAutoUat,
+  runUatSuite,
+  registerUatTemplate
+} from 'betterfront';
+
+const browserPool = new BrowserPool({ headless: true });
+
+try {
+  // 1. Run a customizable UAT workflow with custom variables
+  const uatResult = await runUat('shopee', {
+    targetUrl: 'http://localhost:3000',
+    viewport: 'desktop_fhd',
+    variables: { SEARCH_QUERY: 'gaming monitor' },
+    browserPool
+  });
+
+  // 2. Run a multi-workflow UAT suite sharing the same warm BrowserPool
+  const suiteResult = await runUatSuite(
+    ['universal-smoke', 'responsive-breakpoint-matrix', 'accessibility-keyboard-ergonomics'],
+    { targetUrl: 'http://localhost:3000', browserPool }
+  );
+} finally {
+  await browserPool.closeAll();
+}
+```
 
 ---
 
 ## ⚙️ Granular Anomaly Toggles (Turn ON or OFF)
 
-BetterFront allows developers to independently enable or disable any specific anomaly check via `betterfront.config.ts` or CLI flags:
-
 | Anomaly Key | CLI Flag to Disable | Description | Default |
 | :--- | :--- | :--- | :--- |
-| `textOverlap` | `--no-text-overlap` | Text-on-text collisions | **ON** |
+| `textOverlap` | `--no-text-overlap` | Text-on-text collisions (`Range.getClientRects()`) | **ON** |
 | `horizontalBleed` | `--no-bleed` | Mobile sideways wobble & viewport overflow | **ON** |
 | `containerClipping` | `--no-clipping` | Starved container height or width cutting text | **ON** |
 | `interactiveOcclusion` | `--no-occlusion` | Fixed headers or modals occluding clickables | **ON** |
@@ -66,93 +165,32 @@ BetterFront allows developers to independently enable or disable any specific an
 
 ---
 
-## 🧪 Declarative UAT Scenario Testing
+## 🚀 Quickstart & Commands
 
-Define human-like user acceptance testing workflows in simple, readable JSON files with **full IDE autocompletion**, **schema validation**, and **human kinematics**:
-
-```json
-{
-  "$schema": "./uat-scenario.schema.json",
-  "name": "User Onboarding & Checkout Flow",
-  "startUrl": "http://localhost:7777",
-  "viewports": ["desktop_fhd", "mobile_standard"],
-  "steps": [
-    { "action": "GOTO", "url": "http://localhost:7777", "description": "1. Open app" },
-    { "action": "ASSERT_VISIBLE", "selector": "header.site-topbar" },
-    { "action": "HOVER", "selector": "a.brand-lockup" },
-    { "action": "SCROLL", "scrollPx": 400 },
-    { "action": "ASSERT_NO_BLEED" },
-    { "action": "ASSERT_NO_CONSOLE_ERRORS" },
-    { "action": "SCREENSHOT", "name": "topbar-verification" }
-  ]
-}
-```
-
-### CLI Execution Options:
 ```bash
-# Validate scenario syntax and actions (without launching browser)
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --validate-only
+# 1. Install dependencies
+npm install
 
-# Run headless across configured viewports
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json
+# 2. Typecheck & build TypeScript to ./dist
+npm run typecheck
+npm run build
 
-# Record full-motion WebM video and Playwright trace archive of the UAT run
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --video --trace
-
-# Run in interactive headed mode to watch live in the browser
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed
-
-# Slow down execution by 250ms for visual observation
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed --slowmo 250
-
-# Override target viewport
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --viewport desktop_fhd
-
-# Live Action Recording: launch browser and record clicks/inputs to scenario JSON
-node dist/cli.js record http://localhost:7777 -o ./uat-scenarios/my-flow.json
+# 3. Run the complete verification suite (Audit, UAT & Multi-Variant Workflows)
+npm test
 ```
-
-📖 **Detailed Documentation & Standards:**
-- 🏆 **[Gold-Standard UAT Principles & 12 Frontend Invariants Specification](./docs/GOLD_STANDARD_UAT_AND_FRONTEND_INVARIANTS.md)**
-- [UAT Action Catalog & Authoring Recipes](./uat-scenarios/README.md)
-- [UAT Engine Architectural Specification](./docs/UAT_ACTION_GUIDE.md)
-- [JSON Schema Definition](./uat-scenarios/uat-scenario.schema.json)
 
 ---
 
-## 🚀 Quickstart & Usage
+## 📚 Documentation & Resources
 
-### 1. Installation
-```bash
-# Clone the repository
-git clone https://github.com/your-org/betterfront.git
-cd betterfront
-
-# Install dependencies (Windows PowerShell)
-npm.cmd install
-
-# Compile TypeScript
-npm.cmd run build
-```
-
-### 2. Run Comprehensive Production Audit
-```bash
-# Run audit with full video recording and trace archive
-node dist/cli.js audit https://example.com
-
-# Run fast smoke audit (single mobile viewport)
-node dist/cli.js audit https://example.com --preset=fast-smoke
-
-# Run audit with specific anomaly checks disabled
-node dist/cli.js audit https://example.com --no-touch-targets --no-low-contrast
-```
-
-### 3. Run Self-Tests
-```bash
-npm.cmd test
-```
+- 🏗️ **[System Architecture & SOLID Design Patterns](./ARCHITECTURE.md)**
+- 🤝 **[Contributing Guide](./CONTRIBUTING.md)**
+- 🏆 **[Gold-Standard UAT Principles & 12 Frontend Invariants Specification](./docs/GOLD_STANDARD_UAT_AND_FRONTEND_INVARIANTS.md)**
+- 📋 **[UAT Action Catalog, Templates & Authoring Recipes](./uat-scenarios/README.md)**
+- 🧭 **[Deep Architectural Research & Benchmarks (`/strategies`)](./strategies/00_MASTER_INDEX_AND_EXECUTIVE_SUMMARY.md)**
+- 🔒 **[Security Policy](./SECURITY.md)** • 📦 **[Changelog](./CHANGELOG.md)**
 
 ---
 
 ## 📄 License
-MIT License. Created for the next generation of high-reliability frontend applications.
+[MIT License](./LICENSE) © BetterFront Contributors.

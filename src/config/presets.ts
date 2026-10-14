@@ -65,6 +65,8 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
       return {
         targetUrl,
         preset: 'fast-smoke',
+        browserEngine: 'chromium',
+        concurrency: 1,
         viewports: [STANDARD_VIEWPORTS.mobile_standard],
         anomalyChecks: {
           textOverlap: true,
@@ -73,6 +75,7 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           interactiveOcclusion: true,
           unsizedMedia: false,
           lowContrast: false,
+          breakpointSweep: false,
           touchTargetSize: true,
           textZoom200Percent: false,
           a11yWcagViolations: false,
@@ -111,7 +114,8 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           trackRealtimeCls: true,
           runLighthouse: false,
           maxAllowedCls: 0.15,
-          maxAllowedLcpMs: 3500
+          maxAllowedLcpMs: 3500,
+          maxAllowedInpMs: 300
         },
         accessibility: {
           enabled: false,
@@ -125,6 +129,7 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           blockOnConsoleErrors: true,
           blockOnHorizontalBleed: true,
           blockOnTextCollision: true,
+          blockOnComponentOcclusion: true,
           blockOnBrokenLinks: false,
           blockOnUnsizedMedia: false
         },
@@ -138,6 +143,8 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
       return {
         targetUrl,
         preset: 'comprehensive-deep',
+        browserEngine: 'chromium',
+        concurrency: 3,
         viewports: [
           STANDARD_VIEWPORTS.foldable,
           STANDARD_VIEWPORTS.mobile_compact,
@@ -153,6 +160,7 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           interactiveOcclusion: true,
           unsizedMedia: true,
           lowContrast: true,
+          breakpointSweep: true,
           touchTargetSize: true,
           textZoom200Percent: true,
           a11yWcagViolations: true,
@@ -189,9 +197,10 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
         },
         performance: {
           trackRealtimeCls: true,
-          runLighthouse: false,
+          runLighthouse: true,
           maxAllowedCls: 0.08,
-          maxAllowedLcpMs: 2000
+          maxAllowedLcpMs: 2000,
+          maxAllowedInpMs: 180
         },
         accessibility: {
           enabled: true,
@@ -205,6 +214,7 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           blockOnConsoleErrors: true,
           blockOnHorizontalBleed: true,
           blockOnTextCollision: true,
+          blockOnComponentOcclusion: true,
           blockOnBrokenLinks: true,
           blockOnUnsizedMedia: true
         },
@@ -219,6 +229,8 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
       return {
         targetUrl,
         preset: 'production-gate',
+        browserEngine: 'chromium',
+        concurrency: 3,
         viewports: [
           STANDARD_VIEWPORTS.mobile_standard,
           STANDARD_VIEWPORTS.tablet_portrait,
@@ -231,6 +243,7 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           interactiveOcclusion: true,
           unsizedMedia: true,
           lowContrast: true,
+          breakpointSweep: false,
           touchTargetSize: true,
           textZoom200Percent: false,
           a11yWcagViolations: true,
@@ -269,7 +282,8 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           trackRealtimeCls: true,
           runLighthouse: false,
           maxAllowedCls: 0.10,
-          maxAllowedLcpMs: 2500
+          maxAllowedLcpMs: 2500,
+          maxAllowedInpMs: 200
         },
         accessibility: {
           enabled: true,
@@ -283,6 +297,7 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           blockOnConsoleErrors: true,
           blockOnHorizontalBleed: true,
           blockOnTextCollision: true,
+          blockOnComponentOcclusion: true,
           blockOnBrokenLinks: false,
           blockOnUnsizedMedia: false
         },

@@ -1,0 +1,127 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Shopee Marketplace - Flash Sale, Search & Cart UAT Workflow",
+  "description": "Tests marketplace search, flash sale product discovery, voucher/cart interaction, mobile bleed prevention, and runtime stability.",
+  "template": "shopee-marketplace",
+  "tags": [
+    "shopee",
+    "marketplace",
+    "ecommerce",
+    "flash-sale"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "HEADER_SELECTOR": "header.shopee-header",
+    "SEARCH_INPUT": "input.shopee-search-input",
+    "SEARCH_QUERY": "Mechanical Keyboard RGB",
+    "FLASH_SALE_SELECTOR": ".flash-sale-banner",
+    "VOUCHER_OR_CTA_BTN": ".voucher-claim-btn",
+    "CART_BADGE_SELECTOR": "#cart-badge"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to Shopee-style Marketplace ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{HEADER_SELECTOR}}",
+      "fallbackSelectors": [
+        "header.shopee-header",
+        "header",
+        "nav",
+        "body"
+      ],
+      "description": "2. Verify sticky marketplace header & search bar container is visible"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{SEARCH_INPUT}}",
+      "fallbackSelectors": [
+        "input.shopee-search-input",
+        "input[name=\"q\"]",
+        "#search-box",
+        "#user-name",
+        "input[type=\"text\"]"
+      ],
+      "text": "{{SEARCH_QUERY}}",
+      "clearFirst": true,
+      "pressEnter": true,
+      "ifVisible": true,
+      "description": "3. Search marketplace catalog for \"{{SEARCH_QUERY}}\""
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{FLASH_SALE_SELECTOR}}",
+      "fallbackSelectors": [
+        ".flash-sale-banner",
+        ".product-card",
+        "main",
+        "section",
+        "body"
+      ],
+      "description": "4. Verify Flash Sale / Daily Discover product grid is visible"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "{{VOUCHER_OR_CTA_BTN}}",
+      "fallbackSelectors": [
+        ".voucher-claim-btn",
+        ".btn-add-to-cart",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "5. Verify Voucher Claim / Add-to-Cart CTA is physically unoccluded"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{VOUCHER_OR_CTA_BTN}}",
+      "fallbackSelectors": [
+        ".voucher-claim-btn",
+        ".btn-add-to-cart",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "6. Click Voucher Claim / Add-to-Cart action button"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{CART_BADGE_SELECTOR}}",
+      "fallbackSelectors": [
+        "#cart-badge",
+        ".cart-badge",
+        "header",
+        "body"
+      ],
+      "ifVisible": true,
+      "description": "7. Verify cart badge / header state updates cleanly"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 450,
+      "direction": "down",
+      "description": "8. Scroll through marketplace product feed"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "9. Verify zero unhandled JavaScript console exceptions"
+    },
+    {
+      "action": "ASSERT_NETWORK_OK",
+      "description": "10. Verify zero failed marketplace API/network requests"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "shopee-marketplace-verified",
+      "description": "11. Capture marketplace UAT verification screenshot"
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Dreamblu / RPG Game HUD & Database UAT Workflow",
+  "description": "Validates RPG topbar navigation, brand lockup, HUD telemetry widgets, database search filtering, unoccluded hit testing, topbar clipping starvation, and responsive layout stability.",
+  "template": "rpg-game-hud",
+  "tags": [
+    "rpg",
+    "dreamblu",
+    "hud",
+    "gaming",
+    "topbar"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "TOPBAR_SELECTOR": "header.site-topbar",
+    "BRAND_SELECTOR": "a.brand-lockup",
+    "HUD_WIDGET_SELECTOR": "div.currency-hud-container, [class*=\"hud\"], [class*=\"currency\"]",
+    "SEARCH_SELECTOR": "#search-box",
+    "SEARCH_QUERY": "Bahamut"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "consoleExceptions": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to RPG / Game Web Interface ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{TOPBAR_SELECTOR}}",
+      "fallbackSelectors": [
+        "header.site-topbar",
+        "header",
+        "[role=\"banner\"]",
+        "nav"
+      ],
+      "description": "2. Verify topbar navigation is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{BRAND_SELECTOR}}",
+      "fallbackSelectors": [
+        "a.brand-lockup",
+        ".brand-lockup",
+        "header a",
+        "h1"
+      ],
+      "description": "3. Verify brand lockup logo/title is visible"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "{{BRAND_SELECTOR}}",
+      "fallbackSelectors": [
+        "a.brand-lockup",
+        ".brand-lockup",
+        "header a",
+        "h1"
+      ],
+      "description": "4. Verify brand lockup is physically unoccluded and interactable"
+    },
+    {
+      "action": "HOVER",
+      "selector": "{{BRAND_SELECTOR}}",
+      "fallbackSelectors": [
+        "a.brand-lockup",
+        ".brand-lockup",
+        "header a",
+        "h1"
+      ],
+      "description": "5. Hover over brand lockup to trigger interactive highlight"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{HUD_WIDGET_SELECTOR}}",
+      "fallbackSelectors": [
+        "header.site-topbar",
+        "header",
+        "main"
+      ],
+      "ifVisible": true,
+      "description": "6. Verify HUD status / currency telemetry bar is visible"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{SEARCH_SELECTOR}}",
+      "fallbackSelectors": [
+        "#search-box",
+        "input[type=\"search\"]",
+        "#user-name"
+      ],
+      "text": "{{SEARCH_QUERY}}",
+      "clearFirst": true,
+      "ifVisible": true,
+      "description": "7. Filter RPG database / search box with query \"{{SEARCH_QUERY}}\""
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 400,
+      "direction": "down",
+      "description": "8. Human scroll down game interface to test sticky HUD stability"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "{{TOPBAR_SELECTOR}}",
+      "fallbackSelectors": [
+        "header.site-topbar",
+        "header"
+      ],
+      "optional": true,
+      "description": "9. Verify topbar navigation has zero content clipping or starvation"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "10. Verify zero unhandled JavaScript console exceptions"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "rpg-game-hud-verified",
+      "description": "11. Capture visual evidence screenshot of verified game interface"
+    }
+  ]
+}

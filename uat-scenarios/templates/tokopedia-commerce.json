@@ -1,0 +1,112 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Tokopedia Commerce - Official Store, Filter & Buy UAT Workflow",
+  "description": "Tests Tokopedia-style product search, category tab switching, direct-buy CTA reachability, and console/network hygiene.",
+  "template": "tokopedia-commerce",
+  "tags": [
+    "tokopedia",
+    "commerce",
+    "official-store",
+    "checkout"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "NAVBAR_SELECTOR": "header.tokopedia-navbar",
+    "SEARCH_INPUT": "input.tokopedia-search",
+    "SEARCH_QUERY": "Monitor Gaming 144Hz",
+    "CATEGORY_TAB_SELECTOR": ".category-tab",
+    "BUY_CTA_SELECTOR": ".btn-beli-langsung"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to Tokopedia-style Storefront ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{NAVBAR_SELECTOR}}",
+      "fallbackSelectors": [
+        "header.tokopedia-navbar",
+        "header",
+        "nav",
+        "body"
+      ],
+      "description": "2. Verify Tokopedia top navigation bar is visible"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{SEARCH_INPUT}}",
+      "fallbackSelectors": [
+        "input.tokopedia-search",
+        "input[name=\"q\"]",
+        "#search-box",
+        "#user-name",
+        "input[type=\"text\"]"
+      ],
+      "text": "{{SEARCH_QUERY}}",
+      "clearFirst": true,
+      "pressEnter": true,
+      "ifVisible": true,
+      "description": "3. Type product query \"{{SEARCH_QUERY}}\" into search bar"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{CATEGORY_TAB_SELECTOR}}",
+      "fallbackSelectors": [
+        ".category-tab",
+        "[role=\"tab\"]",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "4. Click Official Store / Category filter tab"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "{{BUY_CTA_SELECTOR}}",
+      "fallbackSelectors": [
+        ".btn-beli-langsung",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "5. Verify \"Beli Langsung\" / Buy CTA button is unoccluded"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{BUY_CTA_SELECTOR}}",
+      "fallbackSelectors": [
+        ".btn-beli-langsung",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "6. Click \"Beli Langsung\" / Buy CTA button"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 400,
+      "direction": "down",
+      "description": "7. Scroll down through store product recommendations"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "8. Verify zero unhandled JavaScript console errors"
+    },
+    {
+      "action": "ASSERT_NETWORK_OK",
+      "description": "9. Verify zero failed network requests"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "tokopedia-commerce-verified",
+      "description": "10. Capture Tokopedia workflow verification screenshot"
+    }
+  ]
+}

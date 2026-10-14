@@ -20,65 +20,95 @@ export const INJECTED_OCCLUSION_SCANNER = `(() => {
 
   elements.forEach((el) => {
     const style = window.getComputedStyle(el);
-    if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) return;
+    if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0 || style.pointerEvents === 'none') return;
 
     const rect = el.getBoundingClientRect();
     // Element must have non-zero dimension and be inside current visual viewport
     if (rect.width < 10 || rect.height < 10) return;
     if (rect.bottom <= 0 || rect.top >= window.innerHeight || rect.right <= 0 || rect.left >= window.innerWidth) return;
 
-    // Check hit test at center point
-    const cx = Math.floor(rect.left + rect.width / 2);
-    const cy = Math.floor(rect.top + rect.height / 2);
+    // 5-Point Hit-Testing: Center (0.5, 0.5) + 4 Inner Quadrants (0.25/0.75)
+    const sampleOffsets = [
+      { name: 'center', rx: 0.5, ry: 0.5 },
+      { name: 'topLeft', rx: 0.25, ry: 0.25 },
+      { name: 'topRight', rx: 0.75, ry: 0.25 },
+      { name: 'bottomLeft', rx: 0.25, ry: 0.75 },
+      { name: 'bottomRight', rx: 0.75, ry: 0.75 }
+    ];
 
-    if (cx < 0 || cx >= window.innerWidth || cy < 0 || cy >= window.innerHeight) return;
+    let blockedPoints = 0;
+    let centerBlocked = false;
+    let primaryOccluder = null;
+    let firstBlockedCoord = null;
 
-    const hitEl = document.elementFromPoint(cx, cy);
-    if (!hitEl) return;
+    for (const pt of sampleOffsets) {
+      const px = Math.floor(rect.left + rect.width * pt.rx);
+      const py = Math.floor(rect.top + rect.height * pt.ry);
+      if (px < 0 || px >= window.innerWidth || py < 0 || py >= window.innerHeight) continue;
 
-    // If hit element is the element itself or a child of it, it is clickable
-    if (hitEl === el || el.contains(hitEl)) return;
+      const hitEl = document.elementFromPoint(px, py);
+      if (!hitEl) continue;
 
-    // Check if the hit element has pointer-events: none (transparent to clicks)
-    const hitStyle = window.getComputedStyle(hitEl);
-    if (hitStyle.pointerEvents === 'none') return;
+      // If hit element is the target itself, a descendant, or an ancestor label/button wrapper, it is valid
+      if (hitEl === el || el.contains(hitEl) || (hitEl.contains(el) && ['LABEL', 'BUTTON', 'A'].includes(hitEl.tagName))) {
+        continue;
+      }
 
-    // An occluding element is intercepting clicks to this interactive element!
-    occlusions.push({
-      blockedElement: {
-        selector: getUniqueSelector(el),
-        tagName: el.tagName.toLowerCase(),
-        id: el.id || null,
-        className: el.className || null,
-        text: (el.textContent || (el.value !== undefined ? el.value : '')).trim().substring(0, 40),
-        rect: {
-          top: Math.round(rect.top + window.scrollY),
-          bottom: Math.round(rect.bottom + window.scrollY),
-          left: Math.round(rect.left + window.scrollX),
-          right: Math.round(rect.right + window.scrollX),
-          width: Math.round(rect.width),
-          height: Math.round(rect.height)
-        }
-      },
-      occludingElement: {
-        selector: getUniqueSelector(hitEl),
-        tagName: hitEl.tagName.toLowerCase(),
-        id: hitEl.id || null,
-        className: hitEl.className || null,
-        text: (hitEl.textContent || '').trim().substring(0, 40),
-        zIndex: hitStyle.zIndex,
-        position: hitStyle.position,
-        rect: {
-          top: Math.round(hitEl.getBoundingClientRect().top + window.scrollY),
-          bottom: Math.round(hitEl.getBoundingClientRect().bottom + window.scrollY),
-          left: Math.round(hitEl.getBoundingClientRect().left + window.scrollX),
-          right: Math.round(hitEl.getBoundingClientRect().right + window.scrollX),
-          width: Math.round(hitEl.getBoundingClientRect().width),
-          height: Math.round(hitEl.getBoundingClientRect().height)
-        }
-      },
-      hitPoint: { x: cx, y: cy }
-    });
+      const hitStyle = window.getComputedStyle(hitEl);
+      if (hitStyle.pointerEvents === 'none') continue;
+
+      blockedPoints++;
+      if (pt.name === 'center') centerBlocked = true;
+      if (!primaryOccluder) {
+        primaryOccluder = { el: hitEl, style: hitStyle };
+        firstBlockedCoord = { x: px, y: py };
+      }
+    }
+
+    // Flag if center is occluded or at least 2 quadrant hit-points are occluded
+    if ((centerBlocked || blockedPoints >= 2) && primaryOccluder) {
+      const hitEl = primaryOccluder.el;
+      const hitStyle = primaryOccluder.style;
+      const hitRect = hitEl.getBoundingClientRect();
+
+      occlusions.push({
+        blockedElement: {
+          selector: getUniqueSelector(el),
+          tagName: el.tagName.toLowerCase(),
+          id: el.id || null,
+          className: typeof el.className === 'string' ? el.className : null,
+          text: (el.textContent || (el.value !== undefined ? el.value : '')).trim().substring(0, 40),
+          rect: {
+            top: Math.round(rect.top + window.scrollY),
+            bottom: Math.round(rect.bottom + window.scrollY),
+            left: Math.round(rect.left + window.scrollX),
+            right: Math.round(rect.right + window.scrollX),
+            width: Math.round(rect.width),
+            height: Math.round(rect.height)
+          }
+        },
+        occludingElement: {
+          selector: getUniqueSelector(hitEl),
+          tagName: hitEl.tagName.toLowerCase(),
+          id: hitEl.id || null,
+          className: typeof hitEl.className === 'string' ? hitEl.className : null,
+          text: (hitEl.textContent || '').trim().substring(0, 40),
+          zIndex: hitStyle.zIndex,
+          position: hitStyle.position,
+          rect: {
+            top: Math.round(hitRect.top + window.scrollY),
+            bottom: Math.round(hitRect.bottom + window.scrollY),
+            left: Math.round(hitRect.left + window.scrollX),
+            right: Math.round(hitRect.right + window.scrollX),
+            width: Math.round(hitRect.width),
+            height: Math.round(hitRect.height)
+          }
+        },
+        hitPoint: firstBlockedCoord,
+        blockedPointsCount: blockedPoints,
+        centerBlocked
+      });
+    }
   });
 
   return occlusions;
@@ -93,7 +123,7 @@ export async function detectInteractiveOcclusion(
   return (rawOcclusions || []).map((o, idx) => ({
     id: `occlusion_${viewport.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_${idx + 1}`,
     type: 'COMPONENT_OCCLUSION',
-    severity: 'CRITICAL',
+    severity: o.centerBlocked ? 'CRITICAL' : 'MAJOR',
     viewportName: viewport.name,
     viewportSize: { width: viewport.width, height: viewport.height },
     elementA: o.blockedElement,
@@ -107,6 +137,8 @@ export async function detectInteractiveOcclusion(
     },
     meta: {
       hitPoint: o.hitPoint,
+      blockedPointsCount: o.blockedPointsCount,
+      centerBlocked: o.centerBlocked,
       occludingZIndex: o.occludingElement.zIndex,
       occludingPosition: o.occludingElement.position
     }

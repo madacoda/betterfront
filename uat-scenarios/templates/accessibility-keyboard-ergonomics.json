@@ -1,0 +1,78 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "WCAG 2.1 AA Keyboard & Ergonomics UAT Workflow",
+  "description": "Tests keyboard Tab focus traversal, WCAG 1.4.3 AA text contrast, and WCAG 2.5.5 touch target ergonomics.",
+  "template": "accessibility-keyboard-ergonomics",
+  "tags": [
+    "a11y",
+    "wcag",
+    "keyboard",
+    "contrast",
+    "touch-targets"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "HEADING_SELECTOR": "header h1",
+    "PRIMARY_BUTTON_SELECTOR": "#submit-form-btn"
+  },
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to target URL ({{BASE_URL}})"
+    },
+    {
+      "action": "PRESS_KEY",
+      "key": "Tab",
+      "description": "2. Press Tab to move keyboard focus to first interactive element"
+    },
+    {
+      "action": "ASSERT_FOCUSED",
+      "optional": true,
+      "description": "3. Verify an interactive element received keyboard focus"
+    },
+    {
+      "action": "PRESS_KEY",
+      "key": "Tab",
+      "description": "4. Press Tab to advance focus to second interactive element"
+    },
+    {
+      "action": "PRESS_KEY",
+      "key": "Shift+Tab",
+      "description": "5. Press Shift+Tab to verify reverse focus traversal (no focus trap)"
+    },
+    {
+      "action": "ASSERT_CONTRAST",
+      "selector": "{{HEADING_SELECTOR}}",
+      "fallbackSelectors": [
+        "h1",
+        "h2",
+        "header a",
+        "body"
+      ],
+      "minRatio": 4.5,
+      "ifVisible": true,
+      "description": "6. Verify primary heading meets WCAG AA 4.5:1 contrast ratio"
+    },
+    {
+      "action": "ASSERT_TOUCH_TARGET",
+      "selector": "{{PRIMARY_BUTTON_SELECTOR}}",
+      "fallbackSelectors": [
+        "#cta-button",
+        "a.brand-lockup",
+        "button"
+      ],
+      "minPx": 36,
+      "ifVisible": true,
+      "description": "7. Verify primary interactive control meets ergonomic target size"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "8. Verify zero runtime console errors during keyboard navigation"
+    }
+  ]
+}

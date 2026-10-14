@@ -1,0 +1,55 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "SaaS Dashboard & Telemetry UAT Workflow",
+  "description": "Validates dashboard component counts, computed CSS layout properties, and zero failed API/network calls.",
+  "template": "crud-dashboard-workflow",
+  "tags": [
+    "saas",
+    "dashboard",
+    "crud",
+    "network"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "ITEM_SELECTOR": "div",
+    "HEADER_SELECTOR": "header"
+  },
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to dashboard ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_COUNT",
+      "selector": "{{ITEM_SELECTOR}}",
+      "count": 0,
+      "operator": "greaterThan",
+      "description": "2. Verify dashboard renders content containers (> 0 elements)"
+    },
+    {
+      "action": "ASSERT_CSS",
+      "selector": "{{HEADER_SELECTOR}}",
+      "fallbackSelectors": [
+        "header",
+        "body"
+      ],
+      "property": "display",
+      "value": "block",
+      "optional": true,
+      "description": "3. Verify primary container computed CSS display property"
+    },
+    {
+      "action": "ASSERT_NETWORK_OK",
+      "description": "4. Verify zero 4xx/5xx network errors on dashboard load"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "5. Verify zero unhandled console exceptions"
+    }
+  ]
+}

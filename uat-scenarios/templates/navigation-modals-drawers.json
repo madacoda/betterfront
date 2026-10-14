@@ -1,0 +1,69 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Navigation, Modals & Zombie Backdrop Verification",
+  "description": "Exercises navigation headers, interactive buttons, Escape key modal dismissal, and unoccluded hit-testing to catch invisible overlay traps.",
+  "template": "navigation-modals-drawers",
+  "tags": [
+    "navigation",
+    "modals",
+    "occlusion",
+    "z-index"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "NAV_CONTAINER": "header",
+    "PRIMARY_BUTTON": "#cta-button"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to target URL ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{NAV_CONTAINER}}",
+      "fallbackSelectors": [
+        "header",
+        "nav",
+        "body"
+      ],
+      "description": "2. Verify navigation container is visible"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{PRIMARY_BUTTON}}",
+      "fallbackSelectors": [
+        "button:not([disabled])",
+        "a[href]"
+      ],
+      "ifVisible": true,
+      "description": "3. Click primary interactive button or modal trigger"
+    },
+    {
+      "action": "PRESS_KEY",
+      "key": "Escape",
+      "description": "4. Press Escape key to dismiss any open modal/drawer overlay"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "{{PRIMARY_BUTTON}}",
+      "fallbackSelectors": [
+        "header a",
+        "button:not([disabled])",
+        "h1"
+      ],
+      "ifVisible": true,
+      "description": "5. Verify underlying interactive control is unoccluded (no zombie backdrop)"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "6. Verify zero console errors after navigation and modal interactions"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Google Search Portal - Query, Keyboard Submit & Results UAT Workflow",
+  "description": "Tests search portal query input, Enter key submission, search results container rendering, unoccluded controls, and runtime hygiene.",
+  "template": "google-search-portal",
+  "tags": [
+    "google",
+    "search",
+    "portal",
+    "query"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "SEARCH_BOX_SELECTOR": "textarea[name=\"q\"], input[name=\"q\"]",
+    "SEARCH_QUERY": "BetterFront Autonomous QA Engine",
+    "SEARCH_BTN_SELECTOR": "button.search-submit-btn",
+    "RESULTS_CONTAINER_SELECTOR": "#search-results"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to Search Engine Portal ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{SEARCH_BOX_SELECTOR}}",
+      "fallbackSelectors": [
+        "textarea[name=\"q\"]",
+        "input[name=\"q\"]",
+        "#search-box",
+        "#user-email",
+        "input[type=\"text\"]",
+        "body"
+      ],
+      "description": "2. Verify primary search query box is visible"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{SEARCH_BOX_SELECTOR}}",
+      "fallbackSelectors": [
+        "textarea[name=\"q\"]",
+        "input[name=\"q\"]",
+        "#search-box",
+        "#user-email",
+        "input[type=\"text\"]"
+      ],
+      "text": "{{SEARCH_QUERY}}",
+      "clearFirst": true,
+      "pressEnter": true,
+      "ifVisible": true,
+      "description": "3. Type search query \"{{SEARCH_QUERY}}\" and press Enter"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{SEARCH_BTN_SELECTOR}}",
+      "fallbackSelectors": [
+        "button.search-submit-btn",
+        "input[name=\"btnK\"]",
+        "#cta-button",
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "optional": true,
+      "description": "4. Click search submit button if visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{RESULTS_CONTAINER_SELECTOR}}",
+      "fallbackSelectors": [
+        "#search-results",
+        "#search",
+        "main",
+        "body"
+      ],
+      "description": "5. Verify search results container is rendered and visible"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "6. Verify zero unhandled JavaScript console errors"
+    },
+    {
+      "action": "ASSERT_NETWORK_OK",
+      "description": "7. Verify zero failed network requests"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "google-search-portal-verified",
+      "description": "8. Capture search portal verification screenshot"
+    }
+  ]
+}

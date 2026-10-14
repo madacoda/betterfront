@@ -17,7 +17,7 @@ export class ScrollerEngine {
       await page.mouse.wheel(0, stepDelta);
 
       // Rapid scroll tick interval
-      await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 40) + 20));
+      await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 12) + 8));
     }
 
     // Dynamic dwell time based on text density in viewport
@@ -26,13 +26,13 @@ export class ScrollerEngine {
       return text.trim().split(/\s+/).length;
     });
 
-    const readingPauseMs = Math.min(2000, Math.max(300, Math.round(visibleWords * 0.5)));
+    const readingPauseMs = Math.min(250, Math.max(80, Math.round(visibleWords * 0.15)));
     await new Promise((r) => setTimeout(r, readingPauseMs));
 
     // 25% chance of slight human adjustment backwards
     if (Math.random() < 0.25) {
       await page.mouse.wheel(0, -60);
-      await new Promise((r) => setTimeout(r, 150));
+      await new Promise((r) => setTimeout(r, 40));
     }
   }
 

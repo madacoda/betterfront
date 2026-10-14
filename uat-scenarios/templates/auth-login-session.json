@@ -1,0 +1,78 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Authentication & Session Persistence UAT Workflow",
+  "description": "Validates login form interaction, localStorage/sessionStorage token persistence, and authenticated UI state.",
+  "template": "auth-login-session",
+  "tags": [
+    "auth",
+    "login",
+    "session",
+    "storage"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "EMAIL_SELECTOR": "#user-email",
+    "PASSWORD_SELECTOR": "input[type=\"password\"]",
+    "SUBMIT_SELECTOR": "#submit-form-btn",
+    "USER_EMAIL": "player1@dreamblu.io",
+    "SESSION_KEY": "bf_auth_session",
+    "SESSION_TOKEN": "verified_session_token_v1"
+  },
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to application login/entry URL ({{BASE_URL}})"
+    },
+    {
+      "action": "SET_STORAGE",
+      "storageType": "local",
+      "key": "{{SESSION_KEY}}",
+      "value": "{{SESSION_TOKEN}}",
+      "description": "2. Seed authenticated session token in localStorage"
+    },
+    {
+      "action": "ASSERT_STORAGE",
+      "storageType": "local",
+      "key": "{{SESSION_KEY}}",
+      "value": "{{SESSION_TOKEN}}",
+      "description": "3. Verify session token persists in localStorage"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{EMAIL_SELECTOR}}",
+      "fallbackSelectors": [
+        "input[type=\"email\"]",
+        "input[name=\"email\"]",
+        "input[type=\"text\"]"
+      ],
+      "text": "{{USER_EMAIL}}",
+      "ifVisible": true,
+      "description": "4. Enter user email \"{{USER_EMAIL}}\" if login input is visible"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{PASSWORD_SELECTOR}}",
+      "text": "CorrectHorseBatteryStaple!99",
+      "ifVisible": true,
+      "description": "5. Enter user password if password field is visible"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{SUBMIT_SELECTOR}}",
+      "fallbackSelectors": [
+        "button[type=\"submit\"]"
+      ],
+      "ifVisible": true,
+      "description": "6. Submit login credentials if submit button is visible"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "7. Verify zero console exceptions during authentication flow"
+    }
+  ]
+}

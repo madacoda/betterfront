@@ -48,7 +48,7 @@ export class TypistEngine {
     } catch {
       await el.focus().catch(() => {});
     }
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 30));
 
     // Clear existing value if requested
     if (clearFirst) {
@@ -66,24 +66,24 @@ export class TypistEngine {
 
         await page.keyboard.press(typoChar);
         // Realization pause (human notices typo)
-        await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 150) + 120));
+        await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 45) + 35));
 
         // Backspace to fix typo
         await page.keyboard.press('Backspace');
-        await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 80) + 60));
+        await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 25) + 20));
       }
 
       await page.keyboard.press(char);
 
       // Log-normal inter-key delay (simulates natural typing rhythm)
-      const baseDelay = Math.floor(Math.random() * 60) + 50;
+      const baseDelay = Math.floor(Math.random() * 14) + 8;
       await new Promise((r) => setTimeout(r, baseDelay));
     }
 
     // Press Enter while element is still focused if requested
     if (pressEnter) {
       await page.keyboard.press('Enter');
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 40));
     }
 
     // Trigger change event and blur safely without blind clicking

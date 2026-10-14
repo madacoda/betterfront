@@ -1,7 +1,7 @@
 import { Page } from 'playwright';
 import { VisualDefect, ViewportDefinition } from '../../types/index.js';
 
-export const INJECTED_TEXT_COLLISION_SCANNER = `(() => {
+export const INJECTED_TEXT_COLLISION_SCANNER = `((minAreaPx) => {
   function getUniqueSelector(el) {
     if (!el || el.nodeType !== Node.ELEMENT_NODE) return '';
     if (el.id) return '#' + el.id;
@@ -24,15 +24,75 @@ export const INJECTED_TEXT_COLLISION_SCANNER = `(() => {
     return path.join(' > ');
   }
 
+  function getStickyOrFixedRoot(el) {
+    let curr = el;
+    while (curr && curr !== document.body && curr !== document.documentElement) {
+      const style = window.getComputedStyle(curr);
+      if (style.position === 'fixed' || style.position === 'sticky') {
+        return curr;
+      }
+      curr = curr.parentElement;
+    }
+    return null;
+  }
+
+  function clipRectToScrollAncestors(rawRect, el) {
+    let top = rawRect.top;
+    let bottom = rawRect.bottom;
+    let left = rawRect.left;
+    let right = rawRect.right;
+
+    let curr = el ? el.parentElement : null;
+    while (curr && curr !== document.body && curr !== document.documentElement) {
+      const style = window.getComputedStyle(curr);
+      const clipX = ['hidden', 'clip', 'scroll', 'auto'].includes(style.overflowX);
+      const clipY = ['hidden', 'clip', 'scroll', 'auto'].includes(style.overflowY);
+      if (clipX || clipY) {
+        const cRect = curr.getBoundingClientRect();
+        if (clipX) {
+          left = Math.max(left, cRect.left);
+          right = Math.min(right, cRect.right);
+        }
+        if (clipY) {
+          top = Math.max(top, cRect.top);
+          bottom = Math.min(bottom, cRect.bottom);
+        }
+      }
+      curr = curr.parentElement;
+    }
+
+    const width = Math.max(0, right - left);
+    const height = Math.max(0, bottom - top);
+    return { top, bottom, left, right, width, height };
+  }
+
+  function extractStyles(el) {
+    const s = window.getComputedStyle(el);
+    return {
+      position: s.position,
+      zIndex: s.zIndex,
+      fontSize: s.fontSize,
+      lineHeight: s.lineHeight,
+      borderRadius: s.borderRadius,
+      marginLeft: s.marginLeft,
+      marginTop: s.marginTop,
+      opacity: s.opacity
+    };
+  }
+
   const textNodes = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
       if (!node.textContent || node.textContent.trim().length === 0) return NodeFilter.FILTER_REJECT;
       const parent = node.parentElement;
       if (!parent) return NodeFilter.FILTER_REJECT;
-      const style = window.getComputedStyle(parent);
-      if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) {
-        return NodeFilter.FILTER_REJECT;
+      let curr = parent;
+      while (curr && curr !== document.documentElement) {
+        const style = window.getComputedStyle(curr);
+        if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        curr = curr.parentElement;
       }
       return NodeFilter.FILTER_ACCEPT;
     }
@@ -48,29 +108,40 @@ export const INJECTED_TEXT_COLLISION_SCANNER = `(() => {
   const range = document.createRange();
 
   for (const node of textNodes) {
+    const parent = node.parentElement;
+    if (!parent) continue;
     range.selectNodeContents(node);
     const rects = range.getClientRects();
+    const stickyRoot = getStickyOrFixedRoot(parent);
+
     for (let i = 0; i < rects.length; i++) {
       const r = rects[i];
-      if (r.width > 2 && r.height > 2) {
-        textRectItems.push({
-          node,
-          parent: node.parentElement,
-          rect: {
-            top: r.top + window.scrollY,
-            bottom: r.bottom + window.scrollY,
-            left: r.left + window.scrollX,
-            right: r.right + window.scrollX,
-            width: r.width,
-            height: r.height
-          },
-          text: node.textContent.trim()
-        });
-      }
+      if (r.width <= 2 || r.height <= 2) continue;
+
+      // Clip against ancestor overflow/scroll containers
+      const clipped = clipRectToScrollAncestors(r, parent);
+      if (clipped.width <= 2 || clipped.height <= 2) continue;
+
+      textRectItems.push({
+        node,
+        parent,
+        stickyRoot,
+        viewportRect: clipped,
+        rect: {
+          top: clipped.top + window.scrollY,
+          bottom: clipped.bottom + window.scrollY,
+          left: clipped.left + window.scrollX,
+          right: clipped.right + window.scrollX,
+          width: clipped.width,
+          height: clipped.height
+        },
+        text: node.textContent.trim()
+      });
     }
   }
 
   const collisions = [];
+  const minArea = typeof minAreaPx === 'number' ? minAreaPx : 12;
 
   for (let i = 0; i < textRectItems.length; i++) {
     for (let j = i + 1; j < textRectItems.length; j++) {
@@ -81,6 +152,9 @@ export const INJECTED_TEXT_COLLISION_SCANNER = `(() => {
       if (itemA.parent === itemB.parent) continue;
       if (itemA.parent.contains(itemB.parent) || itemB.parent.contains(itemA.parent)) continue;
 
+      // Ignore when one element is inside a sticky/fixed chrome layer and the other is normal document flow
+      if (itemA.stickyRoot !== itemB.stickyRoot) continue;
+
       const rA = itemA.rect;
       const rB = itemB.rect;
 
@@ -88,25 +162,41 @@ export const INJECTED_TEXT_COLLISION_SCANNER = `(() => {
       const overlapY = Math.max(0, Math.min(rA.bottom, rB.bottom) - Math.max(rA.top, rB.top));
       const overlapArea = overlapX * overlapY;
 
-      // Threshold: at least 3px overlap in both dimensions and 12px² area
-      if (overlapX >= 3 && overlapY >= 3 && overlapArea >= 12) {
+      if (overlapX >= 3 && overlapY >= 3 && overlapArea >= minArea) {
+        // Verify visibility plane via elementsFromPoint if intersection is within current viewport
+        const vpLeft = Math.max(itemA.viewportRect.left, itemB.viewportRect.left);
+        const vpTop = Math.max(itemA.viewportRect.top, itemB.viewportRect.top);
+        const cx = vpLeft + overlapX / 2;
+        const cy = vpTop + overlapY / 2;
+
+        if (cx >= 0 && cx < window.innerWidth && cy >= 0 && cy < window.innerHeight) {
+          const stack = document.elementsFromPoint(cx, cy);
+          if (stack && stack.length > 0) {
+            const idxA = stack.findIndex(el => el === itemA.parent || itemA.parent.contains(el) || el.contains(itemA.parent));
+            const idxB = stack.findIndex(el => el === itemB.parent || itemB.parent.contains(el) || el.contains(itemB.parent));
+            if (idxA === -1 || idxB === -1) continue;
+          }
+        }
+
         collisions.push({
           type: 'TEXT_ON_TEXT_COLLISION',
           elementA: {
             selector: getUniqueSelector(itemA.parent),
             tagName: itemA.parent.tagName.toLowerCase(),
             id: itemA.parent.id || null,
-            className: itemA.parent.className || null,
+            className: typeof itemA.parent.className === 'string' ? itemA.parent.className : null,
             text: itemA.text.substring(0, 60),
-            rect: rA
+            rect: rA,
+            computedStyles: extractStyles(itemA.parent)
           },
           elementB: {
             selector: getUniqueSelector(itemB.parent),
             tagName: itemB.parent.tagName.toLowerCase(),
             id: itemB.parent.id || null,
-            className: itemB.parent.className || null,
+            className: typeof itemB.parent.className === 'string' ? itemB.parent.className : null,
             text: itemB.text.substring(0, 60),
-            rect: rB
+            rect: rB,
+            computedStyles: extractStyles(itemB.parent)
           },
           overlapBox: {
             left: Math.round(Math.max(rA.left, rB.left)),
@@ -121,16 +211,17 @@ export const INJECTED_TEXT_COLLISION_SCANNER = `(() => {
   }
 
   return collisions;
-})()`;
+})`;
 
 export async function detectTextCollisions(
   page: Page,
-  viewport: ViewportDefinition
+  viewport: ViewportDefinition,
+  minCollisionAreaPx = 12
 ): Promise<VisualDefect[]> {
-  const rawCollisions = await page.evaluate(INJECTED_TEXT_COLLISION_SCANNER);
+  const rawCollisions = await page.evaluate(`${INJECTED_TEXT_COLLISION_SCANNER}(${minCollisionAreaPx})`);
 
   return (rawCollisions as any[]).map((c, idx) => ({
-    id: `text_collision_${viewport.name}_${idx + 1}`,
+    id: `text_collision_${viewport.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_${idx + 1}`,
     type: 'TEXT_ON_TEXT_COLLISION',
     severity: 'CRITICAL',
     viewportName: viewport.name,

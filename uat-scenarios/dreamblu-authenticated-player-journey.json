@@ -1,0 +1,159 @@
+{
+  "$schema": "./uat-scenario.schema.json",
+  "name": "Dreamblu Fantasy - Authenticated Player Experience & Navigation Journey",
+  "description": "Performs authenticated login with user@example.com, navigates to the Player Profile, validates account credentials & verification status, tests Inventory and Shop views, and records visual traces on http://localhost:7777.",
+  "startUrl": "http://localhost:7777",
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "containerClipping": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "1. Open Dreamblu Fantasy Database"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button.save-button",
+      "description": "2. Verify Guest Login / Sign In button is present"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button.save-button",
+      "description": "3. Click Guest Login button to trigger login modal"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "input[type='email']",
+      "description": "4. Wait for authentication email field"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='email']",
+      "text": "user@example.com",
+      "description": "5. Enter player email: user@example.com"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='password']",
+      "text": "Password123",
+      "description": "6. Enter player password: Password123"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SIGN IN TO ACCOUNT')",
+      "description": "7. Click 'SIGN IN TO ACCOUNT' to authenticate"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('Lucio')",
+      "timeoutMs": 10000,
+      "description": "8. Wait for session state to refresh and display 'Lucio ▾'"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Lucio')",
+      "description": "9. Verify player identity badge is rendered"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/profile",
+      "description": "10. Navigate to Player Profile (/profile)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "h1",
+      "description": "11. Wait for Profile Header to load"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "h1",
+      "text": "PLAYER PROFILE & ACCOUNT",
+      "description": "12. Assert Profile header text: 'PLAYER PROFILE & ACCOUNT'"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "div:has-text('VERIFIED')",
+      "description": "13. Assert account status is VERIFIED"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "div:has-text('Lucio')",
+      "description": "14. Assert display name Lucio is displayed on profile"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "dreamblu-profile-view",
+      "description": "15. Capture screenshot of verified player profile"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/inventory",
+      "description": "16. Navigate to Player Inventory (/inventory)"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 1000,
+      "description": "17. Allow inventory grid to populate"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "18. Assert zero horizontal bleed on inventory page"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "dreamblu-inventory-view",
+      "description": "19. Capture screenshot of inventory interface"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/shop",
+      "description": "20. Navigate to In-Game Shop (/shop)"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 1000,
+      "description": "21. Allow shop catalog items to load"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "22. Assert zero horizontal bleed in shop"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "dreamblu-shop-view",
+      "description": "23. Capture screenshot of shop interface"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "24. Return to home dashboard"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Lucio')",
+      "description": "25. Assert player session remains persistently authenticated on homepage"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "header.site-topbar",
+      "description": "26. Verify topbar has no text clipping"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "dreamblu-persisted-session-return",
+      "description": "27. Capture final evidence of persistent authenticated session"
+    }
+  ]
+}

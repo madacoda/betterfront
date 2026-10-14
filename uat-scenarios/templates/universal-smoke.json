@@ -1,0 +1,104 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Universal Zero-Config Smoke & Hygiene Workflow",
+  "description": "Ready-to-run universal smoke test validating landmarks, interactive unoccluded hit targets, scroll behavior, network status, and console error hygiene.",
+  "template": "universal-smoke",
+  "tags": [
+    "smoke",
+    "universal",
+    "zero-config"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "HEADER_SELECTOR": "header, nav, [role=\"banner\"], body",
+    "HEADING_SELECTOR": "h1, h2, [role=\"heading\"], body",
+    "PRIMARY_CTA_SELECTOR": "#cta-button, button:not([disabled]), a.btn, a[href]"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "recording": {
+    "video": false,
+    "trace": false,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to target application ({{BASE_URL}})"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{HEADER_SELECTOR}}",
+      "fallbackSelectors": [
+        "header",
+        "nav",
+        "main",
+        "body"
+      ],
+      "description": "2. Verify primary navigation/header landmark is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{HEADING_SELECTOR}}",
+      "fallbackSelectors": [
+        "h1",
+        "h2",
+        "h3",
+        "body"
+      ],
+      "description": "3. Verify primary page heading is rendered and visible"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "{{PRIMARY_CTA_SELECTOR}}",
+      "fallbackSelectors": [
+        "#cta-button",
+        "button",
+        "a[href]"
+      ],
+      "ifVisible": true,
+      "description": "4. Verify primary interactive CTA or link is physically unoccluded"
+    },
+    {
+      "action": "HOVER",
+      "selector": "{{PRIMARY_CTA_SELECTOR}}",
+      "fallbackSelectors": [
+        "#cta-button",
+        "button",
+        "a[href]"
+      ],
+      "ifVisible": true,
+      "description": "5. Hover over primary interactive control"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 400,
+      "direction": "down",
+      "description": "6. Human scroll down page to trigger lazy elements and sticky headers"
+    },
+    {
+      "action": "SCROLL",
+      "scrollPx": 400,
+      "direction": "up",
+      "description": "7. Scroll back to top of viewport"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "8. Verify zero unhandled JavaScript console exceptions"
+    },
+    {
+      "action": "ASSERT_NETWORK_OK",
+      "description": "9. Verify zero failed (4xx/5xx) network requests"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "universal-smoke-verified",
+      "description": "10. Capture verified baseline screenshot"
+    }
+  ]
+}

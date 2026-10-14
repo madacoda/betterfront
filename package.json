@@ -1,38 +1,71 @@
 {
   "name": "betterfront",
   "version": "1.0.0",
-  "description": "Gold-Standard Autonomous Frontend QA & Production Readiness Engine",
+  "description": "Gold-Standard Autonomous Frontend QA, Visual Layout Geometry & Customizable UAT Workflow Engine",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "bin": {
     "betterfront": "./bin/betterfront.js"
   },
+  "files": [
+    "dist",
+    "bin",
+    "uat-scenarios/uat-scenario.schema.json",
+    "README.md",
+    "ARCHITECTURE.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
+    "clean": "node -e \"import('fs').then(fs => fs.rmSync('./dist', { recursive: true, force: true }))\"",
+    "typecheck": "tsc --noEmit",
     "build": "tsc",
+    "prepublishOnly": "npm run clean && npm run build",
     "audit": "node dist/cli.js audit",
     "uat": "node dist/cli.js uat",
     "record": "node dist/cli.js record",
     "explore": "node dist/cli.js explore",
-    "test": "node --test tests/audit.test.js tests/uat.test.js",
+    "test": "node --test --test-concurrency=1 tests/audit.test.js tests/uat.test.js tests/variants.test.js",
     "test:audit": "node --test tests/audit.test.js",
-    "test:uat": "node --test tests/uat.test.js"
+    "test:uat": "node --test tests/uat.test.js",
+    "test:variants": "node --test tests/variants.test.js"
   },
   "keywords": [
     "frontend-testing",
     "qa",
     "uat",
+    "e2e-testing",
     "visual-regression",
     "text-overlap",
     "layout-shift",
+    "cls",
+    "wcag",
+    "accessibility",
     "lighthouse",
     "playwright",
     "autonomous-agent",
-    "video-recording",
-    "flight-recorder"
+    "sarif",
+    "junit"
   ],
-  "author": "BetterFront Team",
+  "author": "BetterFront Contributors",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/madacoda/betterfront.git"
+  },
+  "bugs": {
+    "url": "https://github.com/madacoda/betterfront/issues"
+  },
+  "homepage": "https://github.com/madacoda/betterfront#readme",
   "dependencies": {
     "@axe-core/playwright": "^4.10.1",
     "@faker-js/faker": "^9.5.0",

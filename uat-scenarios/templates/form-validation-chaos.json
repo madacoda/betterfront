@@ -1,0 +1,129 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "Form Validation, Human Typing & Submission Workflow",
+  "description": "Tests form input typing, clearing, re-entry, synthetic Faker form filling, submission, and confirmation feedback.",
+  "template": "form-validation-chaos",
+  "tags": [
+    "forms",
+    "validation",
+    "typing",
+    "faker"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "EMAIL_INPUT": "#user-email",
+    "NAME_INPUT": "#user-name",
+    "SUBMIT_BUTTON": "#submit-form-btn",
+    "FEEDBACK_SELECTOR": "#form-feedback",
+    "TEST_EMAIL": "champion@betterfront.io",
+    "TEST_NAME": "Aria Vanguard"
+  },
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to form page ({{BASE_URL}})"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{EMAIL_INPUT}}",
+      "fallbackSelectors": [
+        "input[type=\"email\"]",
+        "input[name*=\"email\"]",
+        "input[type=\"text\"]"
+      ],
+      "text": "draft@betterfront.io",
+      "clearFirst": true,
+      "ifVisible": true,
+      "description": "2. Type initial draft email into email input"
+    },
+    {
+      "action": "CLEAR",
+      "selector": "{{EMAIL_INPUT}}",
+      "fallbackSelectors": [
+        "input[type=\"email\"]",
+        "input[name*=\"email\"]",
+        "input[type=\"text\"]"
+      ],
+      "ifVisible": true,
+      "description": "3. Clear email input field"
+    },
+    {
+      "action": "ASSERT_VALUE",
+      "selector": "{{EMAIL_INPUT}}",
+      "fallbackSelectors": [
+        "input[type=\"email\"]",
+        "input[name*=\"email\"]",
+        "input[type=\"text\"]"
+      ],
+      "value": "",
+      "ifVisible": true,
+      "description": "4. Verify email field was cleanly cleared"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{EMAIL_INPUT}}",
+      "fallbackSelectors": [
+        "input[type=\"email\"]",
+        "input[name*=\"email\"]",
+        "input[type=\"text\"]"
+      ],
+      "text": "{{TEST_EMAIL}}",
+      "ifVisible": true,
+      "description": "5. Type final email \"{{TEST_EMAIL}}\""
+    },
+    {
+      "action": "ASSERT_VALUE",
+      "selector": "{{EMAIL_INPUT}}",
+      "fallbackSelectors": [
+        "input[type=\"email\"]",
+        "input[name*=\"email\"]",
+        "input[type=\"text\"]"
+      ],
+      "value": "{{TEST_EMAIL}}",
+      "ifVisible": true,
+      "description": "6. Assert email input holds \"{{TEST_EMAIL}}\""
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{NAME_INPUT}}",
+      "fallbackSelectors": [
+        "input[name*=\"name\"]",
+        "input[type=\"text\"]"
+      ],
+      "text": "{{TEST_NAME}}",
+      "ifVisible": true,
+      "description": "7. Type user name \"{{TEST_NAME}}\""
+    },
+    {
+      "action": "FILL_FORM",
+      "profile": "CONTACT_FORM",
+      "description": "8. Auto-fill any remaining visible form inputs using CONTACT_FORM profile"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{SUBMIT_BUTTON}}",
+      "fallbackSelectors": [
+        "button[type=\"submit\"]",
+        "input[type=\"submit\"]",
+        "form button"
+      ],
+      "ifVisible": true,
+      "description": "9. Click form submit button"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{FEEDBACK_SELECTOR}}",
+      "ifVisible": true,
+      "description": "10. Verify submission feedback message is visible (if present)"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "11. Verify zero unhandled console errors during form flow"
+    }
+  ]
+}

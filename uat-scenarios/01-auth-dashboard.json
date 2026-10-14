@@ -1,0 +1,134 @@
+{
+  "$schema": "./uat-scenario.schema.json",
+  "name": "01 - Dreamblu Core Authentication & Dashboard HUD",
+  "description": "Validates full login flow with user@example.com, persistent session state, currency HUD (Gold, Gems, Chronicle), and account dropdown menu on http://localhost:7777.",
+  "startUrl": "http://localhost:7777",
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "containerClipping": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "1. Open Dreamblu Fantasy Homepage"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "header.site-topbar",
+      "description": "2. Verify topbar navigation is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a.brand-lockup",
+      "description": "3. Verify brand lockup logo is visible"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "a.brand-lockup",
+      "description": "4. Verify brand logo is physically unoccluded"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button.save-button",
+      "description": "5. Verify sign-in trigger button exists"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button.save-button",
+      "description": "6. Click sign-in trigger to open login modal"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "input[type='email']",
+      "description": "7. Wait for email input"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='email']",
+      "text": "user@example.com",
+      "description": "8. Enter user@example.com"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='password']",
+      "text": "Password123",
+      "description": "9. Enter Password123"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SIGN IN TO ACCOUNT')",
+      "description": "10. Click 'SIGN IN TO ACCOUNT'"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('Lucio')",
+      "timeoutMs": 10000,
+      "description": "11. Wait for player badge 'Lucio ▾' to appear"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Lucio')",
+      "description": "12. Assert user profile badge is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a[href='/balance']",
+      "description": "13. Assert gold currency link is present in HUD"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a[href='/gacha']",
+      "description": "14. Assert gem currency link is present in HUD"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a[href='/shop']",
+      "description": "15. Assert chronicle currency link is present in HUD"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('Lucio')",
+      "description": "16. Open account dropdown menu"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "a[href='/profile']",
+      "description": "17. Wait for profile menu item"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a[href='/profile']",
+      "description": "18. Assert profile link visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Logout')",
+      "description": "19. Assert logout button visible"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "20. Assert zero horizontal bleed"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "header.site-topbar",
+      "description": "21. Assert topbar has no text clipping"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "01-auth-dashboard-verified",
+      "description": "22. Capture forensic screenshot of authenticated dashboard"
+    }
+  ]
+}

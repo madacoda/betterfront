@@ -1,0 +1,69 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "E-Commerce Catalog & Guest Checkout UAT Workflow",
+  "description": "Validates product discovery, CTA interaction, synthetic Guest Checkout form population, and network/console health.",
+  "template": "ecommerce-checkout",
+  "tags": [
+    "ecommerce",
+    "checkout",
+    "cart",
+    "forms"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "SEARCH_INPUT": "input[type=\"search\"]",
+    "ADD_TO_CART_BTN": "#cta-button",
+    "CHECKOUT_SUBMIT_BTN": "#submit-form-btn"
+  },
+  "viewports": [
+    "desktop_fhd",
+    "mobile_standard"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to storefront ({{BASE_URL}})"
+    },
+    {
+      "action": "TYPE",
+      "selector": "{{SEARCH_INPUT}}",
+      "text": "Mythic Potion",
+      "pressEnter": true,
+      "ifVisible": true,
+      "description": "2. Search catalog if search bar is present"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{ADD_TO_CART_BTN}}",
+      "fallbackSelectors": [
+        "button:not([disabled])"
+      ],
+      "ifVisible": true,
+      "description": "3. Click primary action / Add-to-Cart CTA button"
+    },
+    {
+      "action": "FILL_FORM",
+      "profile": "GUEST_CHECKOUT",
+      "description": "4. Populate checkout/customer form fields using GUEST_CHECKOUT profile"
+    },
+    {
+      "action": "CLICK",
+      "selector": "{{CHECKOUT_SUBMIT_BTN}}",
+      "fallbackSelectors": [
+        "button[type=\"submit\"]"
+      ],
+      "ifVisible": true,
+      "description": "5. Submit checkout form"
+    },
+    {
+      "action": "ASSERT_NETWORK_OK",
+      "description": "6. Verify all storefront & checkout network requests succeeded"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "7. Verify zero unhandled JavaScript console errors"
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "$schema": "./uat-scenario.schema.json",
+  "name": "02 - Dreamblu Gacha Summoning & Banner Simulator",
+  "description": "Performs authenticated Gacha summoning: banner switching (Rate-up & Standard), 1X gem pulls, 10X multi-pulls, result modal validation, repeat pulls, and summon history audit on http://localhost:7777/gacha.",
+  "startUrl": "http://localhost:7777",
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "containerClipping": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "1. Open Dreamblu Fantasy Homepage"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button.save-button",
+      "description": "2. Click Guest Login to open auth modal"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "input[type='email']",
+      "description": "3. Wait for email field"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='email']",
+      "text": "user@example.com",
+      "description": "4. Enter user@example.com"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='password']",
+      "text": "Password123",
+      "description": "5. Enter Password123"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SIGN IN TO ACCOUNT')",
+      "description": "6. Submit login"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('Lucio')",
+      "timeoutMs": 10000,
+      "description": "7. Wait for authenticated user badge 'Lucio ▾'"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/gacha",
+      "description": "8. Navigate to Gacha Simulator (/gacha)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "h1",
+      "description": "9. Wait for Gacha header"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "h1",
+      "text": "GACHA SIMULATOR & BANNERS",
+      "description": "10. Assert H1 text: 'GACHA SIMULATOR & BANNERS'"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Timeless Tales')",
+      "description": "11. Verify 'Timeless Tales' banner is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('The Round Table')",
+      "description": "12. Verify 'The Round Table' banner is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Standard Banner')",
+      "description": "13. Verify 'Standard Banner' is visible"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('The Round Table')",
+      "description": "14. Select 'The Round Table' Rate-Up Banner"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('PULL 1X')",
+      "description": "15. Assert 'PULL 1X' button is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('PULL 10X')",
+      "description": "16. Assert 'PULL 10X' button is visible"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('PULL 1X')",
+      "description": "17. Execute 1X Summon Pull (180 Gems)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('PULL 1X AGAIN')",
+      "timeoutMs": 10000,
+      "description": "18. Wait for Summon Result Modal with repeat actions"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('PULL 1X AGAIN')",
+      "description": "19. Assert 'PULL 1X AGAIN' button is present"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('PULL 10X AGAIN')",
+      "description": "20. Assert 'PULL 10X AGAIN' button is present"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "02-gacha-single-pull-result",
+      "description": "21. Capture forensic screenshot of single summon result"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('PULL 10X AGAIN')",
+      "description": "22. Execute multi-summon: PULL 10X AGAIN (1,800 Gems)"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 2000,
+      "description": "23. Allow 10x summon cards animation and results to resolve"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "02-gacha-multi-pull-result",
+      "description": "24. Capture forensic screenshot of 10X multi-summon result"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/gacha",
+      "description": "25. Return to Gacha Banners hub"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('SUMMON HISTORY')",
+      "description": "26. Wait for Summon History tab button"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SUMMON HISTORY')",
+      "description": "27. Open Summon History ledger"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 1000,
+      "description": "28. Allow history logs to populate"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "29. Assert zero horizontal bleed on Gacha page"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "header.site-topbar",
+      "description": "30. Assert zero topbar clipping"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "02-gacha-history-audit",
+      "description": "31. Capture forensic screenshot of populated summon history ledger"
+    }
+  ]
+}

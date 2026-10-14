@@ -1,0 +1,236 @@
+{
+  "$schema": "./uat-scenario.schema.json",
+  "name": "06 - Dreamblu Economy, Shop, Missions & Attendance System",
+  "description": "Comprehensive audit across ancillary RPG systems: Item Shop stage & rarity filters (/shop), Inventory catalog (/inventory), Daily/Weekly quest rewards claiming (/missions), Daily Attendance check-in (/daily-login), and currency audit (/balance) on http://localhost:7777.",
+  "startUrl": "http://localhost:7777",
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "containerClipping": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "1. Open Dreamblu Fantasy Homepage"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button.save-button",
+      "description": "2. Click Guest Login to open auth modal"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "input[type='email']",
+      "description": "3. Wait for email field"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='email']",
+      "text": "user@example.com",
+      "description": "4. Enter user@example.com"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='password']",
+      "text": "Password123",
+      "description": "5. Enter Password123"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SIGN IN TO ACCOUNT')",
+      "description": "6. Submit login"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('Lucio')",
+      "timeoutMs": 10000,
+      "description": "7. Wait for authenticated user badge 'Lucio ▾'"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/shop",
+      "description": "8. Navigate to In-Game Shop (/shop)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "h1",
+      "description": "9. Wait for Shop page header"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "h1",
+      "text": "ITEM SHOP & EXCHANGE",
+      "description": "10. Assert H1 text: 'ITEM SHOP & EXCHANGE'"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('Stage 5.1')",
+      "description": "11. Switch Market stage filter to Stage 5.1"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 600,
+      "description": "12. Allow Stage 5.1 catalog items to populate"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('EPIC')",
+      "description": "13. Filter market inventory by EPIC rarity"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 600,
+      "description": "14. Verify epic items filtered"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "06-shop-epic-filtered",
+      "description": "15. Capture filtered shop inventory"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/inventory",
+      "description": "16. Navigate to Player Item Inventory (/inventory)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "h1",
+      "description": "17. Wait for Inventory header"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "h1",
+      "text": "Item Inventory",
+      "description": "18. Assert H1 text: 'Item Inventory'"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "06-inventory-catalog",
+      "description": "19. Capture item inventory catalog"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/missions",
+      "description": "20. Navigate to Command Center Missions (/missions)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "h1",
+      "description": "21. Wait for Missions header"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "h1",
+      "text": "COMMAND CENTER MISSIONS",
+      "description": "22. Assert H1 text: 'COMMAND CENTER MISSIONS'"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('CLAIM ALL')",
+      "description": "23. Assert 'CLAIM ALL' batch reward trigger is visible"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('CLAIM ALL')",
+      "description": "24. Claim completed mission rewards"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 1000,
+      "description": "25. Allow rewards claim animation to complete"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('🏆 ACHIEVEMENTS')",
+      "description": "26. Switch to Achievements ledger"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 600,
+      "description": "27. Allow achievement milestones to render"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "06-missions-and-achievements",
+      "description": "28. Capture mission and achievement ledger"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/daily-login",
+      "description": "29. Navigate to Daily Attendance (/daily-login)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "h1",
+      "description": "30. Wait for Attendance header"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "h1",
+      "text": "COMMAND CENTER ATTENDANCE",
+      "description": "31. Assert H1 text: 'COMMAND CENTER ATTENDANCE'"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('CHECK IN TODAY'), button:has-text('CHECKED IN TODAY'), button:has-text('CLAIM')",
+      "description": "32. Verify Check-In status button is present ('CHECK IN TODAY' or 'CHECKED IN TODAY')"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('CHECK IN TODAY'), button:has-text('CLAIM')",
+      "optional": true,
+      "timeoutMs": 2000,
+      "description": "33. Perform daily attendance check-in (optional if already checked in today)"
+    },
+    {
+      "action": "WAIT",
+      "waitMs": 1000,
+      "description": "34. Allow attendance streak update"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "06-daily-attendance-checked",
+      "description": "35. Capture checked-in daily attendance calendar"
+    },
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777/balance",
+      "description": "36. Navigate to Currency Balances audit (/balance)"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "h1",
+      "description": "37. Wait for Currency Balances header"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "h1",
+      "text": "PLAYER CURRENCY BALANCES",
+      "description": "38. Assert H1 text: 'PLAYER CURRENCY BALANCES'"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "39. Assert zero horizontal bleed"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "header.site-topbar",
+      "description": "40. Assert topbar has no text clipping"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "06-final-economy-balance-audit",
+      "description": "41. Capture final currency balance ledger"
+    }
+  ]
+}

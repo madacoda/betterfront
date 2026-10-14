@@ -1,0 +1,107 @@
+{
+  "$schema": "../uat-scenario.schema.json",
+  "name": "5-Breakpoint Live Responsive Matrix Workflow",
+  "description": "Resizes viewport live across 320px, 390px, 820px, 1366px, and 1920px, verifying landmark visibility and runtime stability at every breakpoint.",
+  "template": "responsive-breakpoint-matrix",
+  "tags": [
+    "responsive",
+    "breakpoints",
+    "mobile",
+    "tablet",
+    "desktop"
+  ],
+  "startUrl": "http://localhost:7777",
+  "variables": {
+    "BASE_URL": "http://localhost:7777",
+    "KEY_LANDMARK": "header, main, h1, body"
+  },
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "{{BASE_URL}}",
+      "description": "1. Navigate to target URL ({{BASE_URL}})"
+    },
+    {
+      "action": "SET_VIEWPORT",
+      "width": 320,
+      "height": 568,
+      "isMobile": true,
+      "name": "Foldable_320px",
+      "description": "2. Resize viewport to 320x568 (Ultra-Compact / Foldable)"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{KEY_LANDMARK}}",
+      "fallbackSelectors": [
+        "header",
+        "h1",
+        "body"
+      ],
+      "description": "3. Verify key landmark remains visible at 320px width"
+    },
+    {
+      "action": "SET_VIEWPORT",
+      "width": 390,
+      "height": 844,
+      "isMobile": true,
+      "name": "Mobile_390px",
+      "description": "4. Resize viewport to 390x844 (Standard Modern Mobile)"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{KEY_LANDMARK}}",
+      "fallbackSelectors": [
+        "header",
+        "h1",
+        "body"
+      ],
+      "description": "5. Verify key landmark remains visible at 390px width"
+    },
+    {
+      "action": "SET_VIEWPORT",
+      "width": 820,
+      "height": 1180,
+      "isMobile": true,
+      "name": "Tablet_820px",
+      "description": "6. Resize viewport to 820x1180 (Tablet Portrait)"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "{{KEY_LANDMARK}}",
+      "fallbackSelectors": [
+        "header",
+        "h1",
+        "body"
+      ],
+      "description": "7. Verify key landmark remains visible at 820px width"
+    },
+    {
+      "action": "SET_VIEWPORT",
+      "width": 1366,
+      "height": 768,
+      "isMobile": false,
+      "name": "Laptop_1366px",
+      "description": "8. Resize viewport to 1366x768 (Standard Widescreen Laptop)"
+    },
+    {
+      "action": "SET_VIEWPORT",
+      "width": 1920,
+      "height": 1080,
+      "isMobile": false,
+      "name": "Desktop_1920px",
+      "description": "9. Resize viewport to 1920x1080 (Full HD Desktop)"
+    },
+    {
+      "action": "ASSERT_NO_CONSOLE_ERRORS",
+      "description": "10. Verify zero console errors across all 5 responsive breakpoint transitions"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "responsive-matrix-complete",
+      "description": "11. Capture final desktop screenshot after responsive sweep"
+    }
+  ]
+}

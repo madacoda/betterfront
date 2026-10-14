@@ -1,0 +1,161 @@
+{
+  "$schema": "./uat-scenario.schema.json",
+  "name": "Dreamblu Fantasy - User Authentication & Session Verification",
+  "description": "Validates full credential login (user@example.com), session state persistence, authenticated HUD updates, user dropdown menu, and layout stability on http://localhost:7777.",
+  "startUrl": "http://localhost:7777",
+  "viewports": [
+    "desktop_fhd"
+  ],
+  "anomalyChecks": {
+    "textOverlap": true,
+    "horizontalBleed": true,
+    "containerClipping": true
+  },
+  "recording": {
+    "video": true,
+    "trace": true,
+    "screenshotOnFailure": true,
+    "artifactsDir": "./betterfront-artifacts"
+  },
+  "steps": [
+    {
+      "action": "GOTO",
+      "url": "http://localhost:7777",
+      "description": "1. Navigate to Dreamblu Fantasy Homepage"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "header.site-topbar",
+      "description": "2. Verify topbar navigation is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a.brand-lockup",
+      "description": "3. Verify brand lockup logo is visible"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button.save-button, button:has-text('Guest Login')",
+      "description": "4. Verify guest login / sign-in button is visible"
+    },
+    {
+      "action": "ASSERT_UNOCCLUDED",
+      "selector": "button.save-button, button:has-text('Guest Login')",
+      "description": "5. Verify sign-in trigger is physically unoccluded and interactable"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button.save-button, button:has-text('Guest Login')",
+      "description": "6. Click sign-in trigger to open authentication modal"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "input[type='email']",
+      "description": "7. Wait for email input to be rendered in modal"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "input[type='email']",
+      "description": "8. Verify email input field is visible"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='email']",
+      "text": "user@example.com",
+      "description": "9. Enter email credential: user@example.com"
+    },
+    {
+      "action": "ASSERT_VALUE",
+      "selector": "input[type='email']",
+      "value": "user@example.com",
+      "description": "10. Assert email input matches user@example.com"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "input[type='password']",
+      "description": "11. Verify password input field is visible"
+    },
+    {
+      "action": "TYPE",
+      "selector": "input[type='password']",
+      "text": "Password123",
+      "description": "12. Enter password credential: Password123"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('SIGN IN TO ACCOUNT')",
+      "description": "13. Verify 'SIGN IN TO ACCOUNT' submission button is visible"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('SIGN IN TO ACCOUNT')",
+      "description": "14. Submit authentication credentials"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "button:has-text('Lucio')",
+      "timeoutMs": 10000,
+      "description": "15. Wait for authenticated user badge ('Lucio ▾') to appear in topbar"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Lucio')",
+      "description": "16. Assert authenticated user profile button is visible"
+    },
+    {
+      "action": "ASSERT_TEXT",
+      "selector": "button:has-text('Lucio')",
+      "text": "Lucio",
+      "description": "17. Assert user display name contains 'Lucio'"
+    },
+    {
+      "action": "HOVER",
+      "selector": "button:has-text('Lucio')",
+      "description": "18. Hover over authenticated user badge"
+    },
+    {
+      "action": "CLICK",
+      "selector": "button:has-text('Lucio')",
+      "description": "19. Click user badge to open account command center menu"
+    },
+    {
+      "action": "WAIT_FOR",
+      "selector": "a[href='/profile']",
+      "description": "20. Wait for user profile menu item to appear"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a[href='/profile']",
+      "description": "21. Verify profile link is visible in user menu"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a[href='/inventory']",
+      "description": "22. Verify inventory link is visible in user menu"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "a[href='/battle']",
+      "description": "23. Verify battle link is visible in user menu"
+    },
+    {
+      "action": "ASSERT_VISIBLE",
+      "selector": "button:has-text('Logout')",
+      "description": "24. Verify logout action button is present"
+    },
+    {
+      "action": "ASSERT_NO_BLEED",
+      "description": "25. Verify layout has zero viewport bleed"
+    },
+    {
+      "action": "ASSERT_NO_CLIPPING",
+      "selector": "header.site-topbar",
+      "description": "26. Verify topbar header has zero content clipping"
+    },
+    {
+      "action": "SCREENSHOT",
+      "name": "dreamblu-authenticated-session-proof",
+      "description": "27. Capture forensic screenshot of authenticated session and account menu"
+    }
+  ]
+}
