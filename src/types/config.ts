@@ -9,7 +9,7 @@ import { UatScenario } from './uat.js';
  * Granular Anomaly Toggles: Every single check can be turned ON or OFF
  */
 export interface AnomalyToggles {
-  // Visual & Layout
+  // Visual & Layout (Core Invariants)
   textOverlap: boolean;
   horizontalBleed: boolean;
   containerClipping: boolean;
@@ -18,19 +18,52 @@ export interface AnomalyToggles {
   lowContrast: boolean;
   breakpointSweep?: boolean;
 
-  // Usability & Accessibility
+  // Usability & Accessibility (Core Invariants)
   touchTargetSize: boolean;
   textZoom200Percent: boolean;
   a11yWcagViolations: boolean;
 
-  // Performance
+  // Performance (Core Invariants)
   layoutShifts: boolean;
   lighthouseCore: boolean;
 
-  // Reliability & Console
+  // Reliability & Console (Core Invariants)
   consoleExceptions: boolean;
   brokenNetworkRequests: boolean;
   brokenLinks: boolean;
+
+  // Optional Web-Based Frontend Checks (Toggleable ON/OFF)
+  brokenImagesAndSvg?: boolean;
+  stickyViewportBudget?: boolean;
+  darkModeParity?: boolean;
+  i18nTextExpansion?: boolean;
+  formErgonomics?: boolean;
+  fontLoadingHealth?: boolean;
+  domComplexityBudget?: boolean;
+  frontendHygiene?: boolean;
+  reducedMotionCompliance?: boolean;
+}
+
+export type FrontendWebCheckCategory =
+  | 'Visual & Layout Geometry'
+  | 'Responsive & Mobile UX'
+  | 'Accessibility & Ergonomics'
+  | 'Performance & Core Web Vitals'
+  | 'Theming & Localization'
+  | 'Forms & Input UX'
+  | 'Security, SEO & DOM Hygiene';
+
+export interface FrontendWebCheckDefinition {
+  key: keyof AnomalyToggles;
+  title: string;
+  category: FrontendWebCheckCategory;
+  tier: 'required-invariant' | 'optional-web-check';
+  defaultEnabled: boolean;
+  cliFlag: string;
+  uatAction: string;
+  description: string;
+  whyItMatters: string;
+  remediationTip: string;
 }
 
 export interface BetterFrontConfig {

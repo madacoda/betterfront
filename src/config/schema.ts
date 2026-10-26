@@ -26,7 +26,17 @@ export const AnomalyTogglesSchema = z.object({
   lighthouseCore: z.boolean().default(false),
   consoleExceptions: z.boolean().default(true),
   brokenNetworkRequests: z.boolean().default(true),
-  brokenLinks: z.boolean().default(true)
+  brokenLinks: z.boolean().default(true),
+  // Optional Web-Based Frontend Checks
+  brokenImagesAndSvg: z.boolean().optional().default(false),
+  stickyViewportBudget: z.boolean().optional().default(false),
+  darkModeParity: z.boolean().optional().default(false),
+  i18nTextExpansion: z.boolean().optional().default(false),
+  formErgonomics: z.boolean().optional().default(false),
+  fontLoadingHealth: z.boolean().optional().default(false),
+  domComplexityBudget: z.boolean().optional().default(false),
+  frontendHygiene: z.boolean().optional().default(false),
+  reducedMotionCompliance: z.boolean().optional().default(false)
 }).default({
   textOverlap: true,
   horizontalBleed: true,
@@ -42,7 +52,16 @@ export const AnomalyTogglesSchema = z.object({
   lighthouseCore: false,
   consoleExceptions: true,
   brokenNetworkRequests: true,
-  brokenLinks: true
+  brokenLinks: true,
+  brokenImagesAndSvg: false,
+  stickyViewportBudget: false,
+  darkModeParity: false,
+  i18nTextExpansion: false,
+  formErgonomics: false,
+  fontLoadingHealth: false,
+  domComplexityBudget: false,
+  frontendHygiene: false,
+  reducedMotionCompliance: false
 });
 
 export const ConfigSchema = z.object({

@@ -9,6 +9,18 @@ import { detectTextCollisions } from '../../inspectors/layout/textCollision.js';
 import { detectHorizontalBleed } from '../../inspectors/layout/horizontalBleed.js';
 import { detectContainerClipping } from '../../inspectors/layout/containerClipping.js';
 import { detectInteractiveOcclusion } from '../../inspectors/layout/interactiveOcclusion.js';
+import { runAxeAudit } from '../../inspectors/a11y/axeRunner.js';
+import {
+  detectBrokenImagesAndSvg,
+  auditStickyViewportBudget,
+  auditDarkModeParity,
+  auditI18nTextExpansion,
+  auditFormErgonomics,
+  auditFontLoadingHealth,
+  auditDomComplexityBudget,
+  auditFrontendHygiene,
+  auditReducedMotionCompliance
+} from '../../inspectors/web/index.js';
 
 export async function handleAssertionAction(
   action: string,
@@ -319,8 +331,9 @@ export async function handleAssertionAction(
         const target = document.querySelector(targetSel);
         if (!target) return { found: false };
 
+        let colorCanvasCtx: CanvasRenderingContext2D | null = null;
         function parseRgba(colorStr: string): [number, number, number, number] {
-          if (!colorStr || colorStr === 'transparent') return [0, 0, 0, 0];
+          if (!colorStr || colorStr === 'transparent' || colorStr === 'rgba(0, 0, 0, 0)') return [0, 0, 0, 0];
           const match = colorStr.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*[,/]\s*([0-9.]+))?\s*\)/);
           if (match) {
             return [
@@ -330,6 +343,21 @@ export async function handleAssertionAction(
               match[4] !== undefined ? parseFloat(match[4]) : 1
             ];
           }
+          try {
+            if (!colorCanvasCtx) {
+              const canvas = document.createElement('canvas');
+              canvas.width = 1;
+              canvas.height = 1;
+              colorCanvasCtx = canvas.getContext('2d', { willReadFrequently: true });
+            }
+            if (colorCanvasCtx) {
+              colorCanvasCtx.clearRect(0, 0, 1, 1);
+              colorCanvasCtx.fillStyle = colorStr;
+              colorCanvasCtx.fillRect(0, 0, 1, 1);
+              const data = colorCanvasCtx.getImageData(0, 0, 1, 1).data;
+              return [data[0], data[1], data[2], Math.round((data[3] / 255) * 1000) / 1000];
+            }
+          } catch {}
           return [0, 0, 0, 1];
         }
 
@@ -425,6 +453,98 @@ export async function handleAssertionAction(
 
       if (issues.length > 0) {
         throw new Error(`Visual & runtime invariants violated on ${activeViewport.name}: ${issues.join(', ')}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_NO_BROKEN_IMAGES': {
+      const found = await detectBrokenImagesAndSvg(page, activeViewport);
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(`Broken image or collapsed SVG detected: <${found[0].elementA.selector}> (${found[0].aiTriage?.description || ''})`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_STICKY_BUDGET': {
+      const maxRatio = step.minRatio ? step.minRatio / 100 : 0.25;
+      const found = await auditStickyViewportBudget(page, activeViewport, maxRatio);
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(found[0].aiTriage?.description || `Sticky/fixed layers exceed viewport height budget on ${activeViewport.name}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_DARK_MODE_PARITY': {
+      const found = await auditDarkModeParity(page, activeViewport);
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(found[0].aiTriage?.description || `Dark mode contrast parity failed on ${activeViewport.name}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_I18N_EXPANSION': {
+      const found = await auditI18nTextExpansion(page, activeViewport);
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(found[0].aiTriage?.description || `i18n +35% text expansion caused overflow/collision on ${activeViewport.name}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_FORM_ERGONOMICS': {
+      const found = await auditFormErgonomics(page, activeViewport);
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(found[0].aiTriage?.description || `Form ergonomics check failed on ${activeViewport.name}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_FONT_HEALTH': {
+      const found = await auditFontLoadingHealth(page, activeViewport);
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(found[0].aiTriage?.description || `Font loading health check failed on ${activeViewport.name}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_DOM_BUDGET': {
+      const maxTotalNodes = step.count || 1500;
+      const found = await auditDomComplexityBudget(page, activeViewport, { maxTotalNodes });
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(found[0].aiTriage?.description || `DOM complexity budget exceeded on ${activeViewport.name}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_FRONTEND_HYGIENE': {
+      const found = await auditFrontendHygiene(page, activeViewport);
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(found[0].aiTriage?.description || `Frontend hygiene check failed on ${activeViewport.name}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_REDUCED_MOTION': {
+      const found = await auditReducedMotionCompliance(page, activeViewport);
+      onAnomalies(found);
+      if (found.length > 0) {
+        throw new Error(found[0].aiTriage?.description || `Prefers-reduced-motion compliance failed on ${activeViewport.name}`);
+      }
+      return true;
+    }
+
+    case 'ASSERT_A11Y': {
+      const axeRes = await runAxeAudit(page);
+      const criticalOrSerious = axeRes.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious');
+      if (criticalOrSerious.length > 0) {
+        throw new Error(`WCAG 2.2 AA accessibility violation (${criticalOrSerious[0].id} - ${criticalOrSerious[0].impact}): ${criticalOrSerious[0].description}`);
       }
       return true;
     }

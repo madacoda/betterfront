@@ -9,22 +9,25 @@ BetterFront is architected as a **modular, strictly-typed TypeScript ESM framewo
 ```mermaid
 flowchart TD
   CLI["CLI Entrypoint (src/cli.ts)"] --> API["Public SDK Facade (src/index.ts)"]
+  StudioUI["shadcn/ui React Studio SPA (studio/)"] <-->|"REST + SSE (/api/events)"| StudioSrv["Studio HTTP/SSE Server (src/studio/server.ts)"]
+  StudioSrv --> API
   UserSDK["Programmatic Consumers"] --> API
 
-  API --> Config["Config & Zod Schema Engine (src/config/)"]
+  API --> Config["Config, Zod Schema & Web Checks Catalog (src/config/)"]
   API --> Runner["Core Audit Orchestrator (src/core/runner.ts)"]
   API --> UatEngine["Declarative & Autonomous UAT Engine (src/uat/)"]
 
   Runner --> Pool["Shared BrowserPool (src/core/browserPool.ts)"]
   UatEngine --> Pool
+  StudioSrv --> Pool
 
   subgraph ConcurrentViewportPipeline ["Concurrent Viewport Pipeline (Promise.all)"]
     Runner --> Agent["Human Simulation Agent (src/agent/)"]
-    Runner --> Inspectors["Parallel Read-Only Inspectors (src/inspectors/)"]
+    Runner --> Inspectors["12 Core + 9 Optional Web Inspectors (src/inspectors/)"]
     Runner --> Vision["2-Stage VLM / Heuristic Triage (src/vision/)"]
   end
 
-  subgraph UatCommandPipeline ["SOLID UAT Command & Template Pipeline"]
+  subgraph UatCommandPipeline ["SOLID UAT Command & Template Pipeline (48 Actions)"]
     UatEngine --> Registry["Open-Closed Template Registry (src/uat/templates/)"]
     UatEngine --> Generator["Autonomous DOM UAT Synthesizer (src/uat/generator.ts)"]
     UatEngine --> UatRunner["UAT Orchestrator (src/uat/uatRunner.ts)"]
@@ -46,7 +49,7 @@ Decomposed by domain so modules only depend on the interfaces they actually use 
 - `src/types/defects.ts`: Geometry (`Rect`), visual anomalies (`VisualDefect`), Core Web Vitals (`CoreWebVitalsMetrics`), accessibility (`A11yViolation`, `TouchTargetDefect`), and console/network telemetry.
 - `src/types/config.ts`: `AnomalyToggles`, `ViewportDefinition`, `HumanAgentConfig`, and `BetterFrontConfig`.
 - `src/types/reporting.ts`: `ViewportAuditResult`, `HealthScoreBreakdown`, and `AuditRunSummary`.
-- `src/types/uat.ts`: All 38 `UatActionType` literals, `UatStep`, `UatScenario`, `UatRunResult`, `UatSuiteResult`, and `UatWorkflowTemplateId`.
+- `src/types/uat.ts`: All 48 `UatActionType` literals, `UatStep`, `UatScenario`, `UatRunResult`, `UatSuiteResult`, and `UatWorkflowTemplateId`.
 - `src/types/index.ts`: Barrel export for external SDK consumers.
 
 ### 2. Core Browser & Recording Infrastructure (`src/core/`)
@@ -79,6 +82,12 @@ Decomposed by domain so modules only depend on the interfaces they actually use 
   - `lighthouseRunner.ts`: Programmatic Lighthouse runner.
 - `src/inspectors/network/`:
   - `linkChecker.ts`: Empty `href` and broken `#anchor` target inspector.
+- `src/inspectors/web/`:
+  - `brokenImagesAndSvg.ts`, `stickyViewportBudget.ts`, `darkModeParity.ts`, `i18nTextExpansion.ts`, `formErgonomics.ts`, `fontLoadingHealth.ts`, `domComplexityBudget.ts`, `frontendHygiene.ts`, `reducedMotionCompliance.ts`, and `index.ts` (`runOptionalWebChecks`).
+
+### 5. Local Full-Stack `shadcn/ui` UAT Studio (`src/studio/` & `studio/`)
+- `src/studio/server.ts`: Zero-dependency Node HTTP + Server-Sent Events (SSE) API server (`BetterFrontStudioServer`, `startStudioServer`) serving `/api/*`, `/artifacts/*`, and the compiled React SPA from `dist/studio-ui/`.
+- `studio/`: React 19 + Vite + Tailwind CSS v4 + Radix UI / `shadcn/ui` Single-Page Application featuring a collapsible Left App Sidebar (`sidebar-07` style), Connected Vertical Step Timeline + Right-Side Step Inspector, Slide-Over `Sheet` drawers, searchable `SelectMenu`, `Progress` health bars, and the **TweakCN Theme Engine** (`Neo-Brutalism` default, `Claude`, `Cyberpunk`, `Minimal` + Daylight/Dark & Comfortable Large Text modes).
 
 ### 5. Modular UAT Workflow Engine (`src/uat/`)
 Designed around **Single Responsibility**, **Open-Closed**, and **Command/Strategy** patterns:

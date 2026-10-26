@@ -12,6 +12,7 @@ import {
   listUatTemplates,
   getUatTemplate,
   registerUatTemplate,
+  unregisterUatTemplate,
   validateScenario,
   formatValidationReport
 } from '../dist/index.js';
@@ -19,7 +20,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-test('BetterFront Declarative & Autonomous UAT Engine Suite', async (t) => {
+test('BetterFront Declarative & Autonomous UAT Engine Suite', { timeout: 240000 }, async (t) => {
 
   await t.test('Pre-flight Scenario Validator checks structure and all 38 actions', () => {
     // 1. Valid scenario passes (including new actions and variable interpolation)
@@ -429,6 +430,7 @@ test('BetterFront Declarative & Autonomous UAT Engine Suite', async (t) => {
 
       const customTpl = getUatTemplate('custom-registered-template', testUrl);
       assert.ok(customTpl, 'Custom registered template should be retrievable via getUatTemplate');
+      unregisterUatTemplate('custom-registered-template');
 
       // 1. Run rpg-game-hud (Dreamblu-ready workflow) directly against testUrl
       const rpgRes = await runUat('rpg-game-hud', {

@@ -185,3 +185,4 @@ export async function resolveConfigAsync(
 }
 
 export { STANDARD_VIEWPORTS, getPresetConfig };
+export { FRONTEND_WEB_CHECKS_CATALOG } from './webChecksCatalog.js';

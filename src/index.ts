@@ -25,6 +25,7 @@ export * from './inspectors/perf/lighthouseRunner.js';
 export * from './inspectors/a11y/touchTargets.js';
 export * from './inspectors/a11y/textZoom.js';
 export * from './inspectors/a11y/axeRunner.js';
+export * from './inspectors/web/index.js';
 export * from './uat/uatRunner.js';
 export * from './uat/validator.js';
 export * from './uat/generator.js';
@@ -34,6 +35,7 @@ export * from './reporter/scoring.js';
 export * from './reporter/html.js';
 export * from './reporter/json.js';
 export * from './uat/recorder.js';
+export * from './studio/server.js';
 
 import * as fs from 'fs';
 import * as path from 'path';

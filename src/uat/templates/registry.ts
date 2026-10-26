@@ -30,14 +30,45 @@ const ALIAS_TEMPLATE_IDS = new Set([
  * Open-Closed Extension Point: registers a custom UAT workflow template at runtime.
  */
 export function registerUatTemplate(
-  entry: UatTemplateCatalogEntry,
+  entry:
+    | UatTemplateCatalogEntry
+    | (Omit<UatTemplateCatalogEntry, 'buildScenario' | 'defaultVariables'> & {
+        defaultVariables?: Record<string, string>;
+        buildScenario?: (targetUrl?: string) => UatScenario;
+        scenario?: UatScenario;
+      }),
   options?: { isAlias?: boolean }
 ): void {
   const key = entry.id.toLowerCase().trim();
-  UAT_WORKFLOW_TEMPLATES[key] = entry;
+  const normalizedEntry: UatTemplateCatalogEntry = {
+    id: entry.id,
+    title: entry.title,
+    category: entry.category,
+    description: entry.description,
+    defaultVariables: entry.defaultVariables || (entry as any).scenario?.variables || {},
+    buildScenario:
+      entry.buildScenario ||
+      ((targetUrl?: string) => {
+        const base = (entry as any).scenario as UatScenario;
+        return {
+          ...base,
+          startUrl: targetUrl || base.startUrl
+        };
+      })
+  };
+  UAT_WORKFLOW_TEMPLATES[key] = normalizedEntry;
   if (options?.isAlias) {
     ALIAS_TEMPLATE_IDS.add(key);
   }
+}
+
+/**
+ * Unregisters a dynamically added UAT workflow template by ID.
+ */
+export function unregisterUatTemplate(templateId: string): void {
+  const key = templateId.toLowerCase().trim();
+  delete UAT_WORKFLOW_TEMPLATES[key];
+  ALIAS_TEMPLATE_IDS.delete(key);
 }
 
 /**

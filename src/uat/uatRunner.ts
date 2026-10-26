@@ -26,6 +26,7 @@ import { detectInteractiveOcclusion } from '../inspectors/layout/interactiveOccl
 import { detectUnsizedMedia } from '../inspectors/layout/unsizedMedia.js';
 import { auditColorContrast } from '../inspectors/a11y/colorContrast.js';
 import { auditPageLinks } from '../inspectors/network/linkChecker.js';
+import { runOptionalWebChecks } from '../inspectors/web/index.js';
 import { interpolateScenario, interpolateString, resolveUrl } from './interpolation.js';
 import {
   resolveSelector,
@@ -274,6 +275,10 @@ export class UatRunner {
         for (const group of results) {
           scenarioAnomalies.push(...group);
         }
+
+        // Run any enabled optional web-based frontend checks
+        const optionalWebDefects = await runOptionalWebChecks(page, activeViewport, checks);
+        scenarioAnomalies.push(...optionalWebDefects);
       } catch {
         // Ignore post-scenario inspection issues if page closed
       }

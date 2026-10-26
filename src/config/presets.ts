@@ -168,7 +168,16 @@ export function getPresetConfig(preset: 'production-gate' | 'fast-smoke' | 'comp
           lighthouseCore: true,
           consoleExceptions: true,
           brokenNetworkRequests: true,
-          brokenLinks: true
+          brokenLinks: true,
+          brokenImagesAndSvg: true,
+          stickyViewportBudget: true,
+          darkModeParity: true,
+          i18nTextExpansion: true,
+          formErgonomics: true,
+          fontLoadingHealth: true,
+          domComplexityBudget: true,
+          frontendHygiene: true,
+          reducedMotionCompliance: true
         },
         humanAgent: {
           enabled: true,

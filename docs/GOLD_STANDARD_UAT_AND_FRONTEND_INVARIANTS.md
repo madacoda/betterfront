@@ -452,8 +452,18 @@ To ensure 100% confidence, developers can use the following declarative assertio
 | **`ASSERT_NO_CLIPPING`** | *none* | `selector`, `timeoutMs` | Invariant 3: Verifies no hidden vertical or horizontal text truncation/starvation (`scrollHeight > clientHeight`). |
 | **`ASSERT_NO_BLEED`** | *none* | *none* | Invariant 4: Verifies zero mobile horizontal viewport overflow and sideways wobbling. |
 | **`ASSERT_TOUCH_TARGET`** | `selector` | `minPx` (default 44) | Invariant 5: Verifies element bounding box meets touch target ergonomics ($44\times 44\text{px}$). |
-| **`ASSERT_CONTRAST`** | `selector` | `minRatio` (default 4.5) | Invariant 7: Verifies element text contrast ratio meets WCAG AA standards. |
+| **`ASSERT_CONTRAST`** | `selector` | `minRatio` (default 4.5) | Invariant 7: Verifies element text contrast ratio meets WCAG AA standards (including CSS Color 4 `oklch`/`lab`). |
 | **`ASSERT_NO_CONSOLE_ERRORS`**| *none* | *none* | Invariant 9: Verifies zero unhandled exceptions or rejected promises. |
+| **`ASSERT_NO_BROKEN_IMAGES`** | *none* | *none* | Optional Web Check: Verifies zero broken `<img>` (`naturalWidth === 0`) or `0x0` `<svg>` icons. |
+| **`ASSERT_STICKY_BUDGET`** | *none* | *none* | Optional Web Check: Verifies fixed/sticky headers & banners consume `<= 25%` of mobile viewport height. |
+| **`ASSERT_DARK_MODE_PARITY`** | *none* | `minRatio` | Optional Web Check: Emulates `prefers-color-scheme: dark` and verifies WCAG AA text contrast parity. |
+| **`ASSERT_I18N_EXPANSION`** | *none* | *none* | Optional Web Check: Simulates `+35%` pseudo-localized text expansion and checks for clipping/overlap. |
+| **`ASSERT_FORM_ERGONOMICS`** | *none* | *none* | Optional Web Check: Audits inputs for `<label>`, `autocomplete` tokens, and `>= 16px` mobile font-size. |
+| **`ASSERT_FONT_HEALTH`** | *none* | *none* | Optional Web Check: Audits `document.fonts` and `@font-face` rules for failed loads or missing `font-display`. |
+| **`ASSERT_DOM_BUDGET`** | *none* | *none* | Optional Web Check: Enforces total DOM nodes `<= 1,500`, max depth `<= 32`, and max direct children `<= 100`. |
+| **`ASSERT_FRONTEND_HYGIENE`** | *none* | *none* | Optional Web Check: Audits `<title>`, `<meta>`, `<html lang>`, `target="_blank"` `rel="noopener"`, and storage leaks. |
+| **`ASSERT_REDUCED_MOTION`** | *none* | *none* | Optional Web Check: Emulates `prefers-reduced-motion: reduce` and flags infinite CSS animations. |
+| **`ASSERT_A11Y`** | *none* | *none* | Runs WCAG 2.2 AA `axe-core` semantic accessibility rules. |
 | **`SCREENSHOT`** | *none* | `name`, `fullPage` | Invariant 10: Captures high-res visual evidence artifact. |
 
 ---
@@ -463,14 +473,17 @@ To ensure 100% confidence, developers can use the following declarative assertio
 Before shipping any frontend to production, execute the following audit checklist:
 
 ```bash
+# 0. Visual UAT Studio (Interactive shadcn/ui Workflow Builder & Web Checks Control Center)
+bun run studio
+
 # 1. Syntax & Pre-Flight Validation
-betterfront uat <scenarioFile> --validate-only
+bunx betterfront uat <scenarioFile> --validate-only
 
 # 2. Comprehensive Multi-Viewport Run with Forensic Video & Trace
-betterfront uat <scenarioFile> --video --trace
+bunx betterfront uat <scenarioFile> --video --trace
 
-# 3. Full Production Quality Gate Audit (CLS, Touch, Contrast, Axe A11y, Collisions, Occlusions)
-betterfront audit <url> --preset production-gate
+# 3. Full Production Quality Gate Audit (CLS, Touch, Contrast, Axe A11y, Collisions, Occlusions + Optional Web Checks)
+bunx betterfront audit <url> --preset production-gate --check-broken-images --check-sticky-budget --check-dark-mode --check-hygiene
 ```
 
 If all gates pass: **You have 100% mathematical, visual, and behavioral confidence that your frontend meets true gold industry standards.**

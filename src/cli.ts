@@ -11,7 +11,8 @@ import {
   generateUatScenario,
   listUatTemplates,
   getUatTemplate,
-  scaffoldUatTemplatesToDisk
+  scaffoldUatTemplatesToDisk,
+  startStudioServer
 } from './index.js';
 import { ViewportDefinition, BrowserEngineType } from './types/index.js';
 import { validateScenario, formatValidationReport } from './uat/validator.js';
@@ -36,7 +37,7 @@ const program = new Command();
 program
   .name('betterfront')
   .description('Gold-Standard Autonomous Frontend QA & Production-Readiness Engine')
-  .version('1.0.0');
+  .version('1.1.0');
 
 program
   .command('audit')
@@ -68,6 +69,17 @@ program
   .option('--lighthouse', 'Run programmatic Google Lighthouse audit')
   .option('--ai-triage', 'Enable Multimodal VLM AI triage for visual defects')
   .option('--vlm-provider <provider>', 'VLM provider: gemini, claude, openai, mock')
+  // Optional Web-Based Frontend Checks
+  .option('--check-broken-images', 'Enable Broken Images, SVGs & Media render check')
+  .option('--check-sticky-budget', 'Enable Sticky/Fixed Chrome viewport height budget check (<=25%)')
+  .option('--check-dark-mode', 'Enable Dark Mode contrast parity check')
+  .option('--check-i18n', 'Enable i18n +35% pseudo-localization text expansion stress test')
+  .option('--check-forms', 'Enable Form Ergonomics, Labels & Autocomplete check')
+  .option('--check-fonts', 'Enable Web Font loading & font-display hygiene check')
+  .option('--check-dom-budget', 'Enable DOM complexity & unvirtualized list budget check')
+  .option('--check-hygiene', 'Enable Frontend Security, SEO & Storage hygiene check')
+  .option('--check-reduced-motion', 'Enable prefers-reduced-motion accessibility compliance check')
+  .option('--check-all-web', 'Enable all 9 optional web-based frontend checks')
   // Output paths
   .option('--html <path>', 'Custom path for interactive HTML report', './betterfront-report.html')
   .option('--json <path>', 'Custom path for JSON summary', './betterfront-summary.json')
@@ -112,7 +124,16 @@ program
             lighthouseCore: Boolean(options.lighthouse),
             consoleExceptions: options.consoleErrors !== false,
             brokenNetworkRequests: true,
-            brokenLinks: options.brokenLinks !== false
+            brokenLinks: options.brokenLinks !== false,
+            brokenImagesAndSvg: Boolean(options.checkBrokenImages || options.checkAllWeb),
+            stickyViewportBudget: Boolean(options.checkStickyBudget || options.checkAllWeb),
+            darkModeParity: Boolean(options.checkDarkMode || options.checkAllWeb),
+            i18nTextExpansion: Boolean(options.checkI18n || options.checkAllWeb),
+            formErgonomics: Boolean(options.checkForms || options.checkAllWeb),
+            fontLoadingHealth: Boolean(options.checkFonts || options.checkAllWeb),
+            domComplexityBudget: Boolean(options.checkDomBudget || options.checkAllWeb),
+            frontendHygiene: Boolean(options.checkHygiene || options.checkAllWeb),
+            reducedMotionCompliance: Boolean(options.checkReducedMotion || options.checkAllWeb)
           },
           humanAgent: options.persona ? ({ persona: options.persona } as any) : undefined,
           layoutEngine: {
@@ -472,6 +493,35 @@ program
       });
     } catch (err) {
       console.error(`\n❌ Recording Failed:\n${(err as Error).message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('studio')
+  .description('Launch the interactive shadcn/ui BetterFront UAT Workflow Studio & Web QA Control Center')
+  .option('-p, --port <number>', 'Port to run the Studio server on', '4400')
+  .option('--host <host>', 'Hostname to bind', 'localhost')
+  .option('--scenarios-dir <dir>', 'Path to UAT scenarios directory', './uat-scenarios')
+  .option('--artifacts-dir <dir>', 'Path to artifacts directory', './betterfront-artifacts')
+  .action(async (options: any) => {
+    try {
+      const portNum = parseInt(options.port, 10) || 4400;
+      const { url } = await startStudioServer({
+        port: portNum,
+        host: options.host,
+        scenariosDir: options.scenariosDir,
+        artifactsDir: options.artifactsDir
+      });
+      console.log(`\n======================================================`);
+      console.log(`🛡️  BetterFront UAT Workflow Studio (shadcn/ui)`);
+      console.log(`🌐 Studio URL:   ${url}`);
+      console.log(`📂 Scenarios:    ${path.resolve(options.scenariosDir)}`);
+      console.log(`📦 Artifacts:    ${path.resolve(options.artifactsDir)}`);
+      console.log(`======================================================`);
+      console.log(`Press Ctrl+C to stop the Studio server.\n`);
+    } catch (err) {
+      console.error(`\n❌ Failed to start BetterFront Studio:\n${(err as Error).message}`);
       process.exit(1);
     }
   });

@@ -68,7 +68,7 @@ export function generateSarifReport(summary: AuditRunSummary): Record<string, an
           driver: {
             name: 'BetterFront',
             informationUri: 'https://github.com/madacoda/betterfront',
-            version: '1.0.0',
+            version: '1.1.0',
             rules: Array.from(rulesMap.values())
           }
         },

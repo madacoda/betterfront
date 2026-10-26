@@ -14,10 +14,18 @@ export async function auditTouchTargets(
 
     function getSelector(el: Element): string {
       if (el.id) return '#' + el.id;
+      const testId = el.getAttribute('data-testid') || el.getAttribute('data-qa');
+      if (testId) return `[data-testid="${testId}"]`;
       let s = el.tagName.toLowerCase();
       if (el.className && typeof el.className === 'string') {
         const c = el.className.trim().split(/\s+/)[0];
         if (c) s += '.' + c;
+      }
+      if (el.parentElement && document.querySelectorAll(s).length > 1) {
+        const siblings = Array.from(el.parentElement.children).filter((ch) => ch.tagName === el.tagName);
+        if (siblings.length > 1) {
+          s += `:nth-of-type(${siblings.indexOf(el) + 1})`;
+        }
       }
       return s;
     }

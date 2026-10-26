@@ -23,7 +23,7 @@ Traditional E2E tools only tell you if a DOM node exists (`expect(locator).toBeV
 1. **Mathematical In-Browser DOM Geometry** (`Range.getClientRects()`, AABB collision, Stacking Context trees).
 2. **2-Stage Cognitive Multimodal Vision Triage** (Gemini 2.0 Flash / Claude 3.5 Sonnet + deterministic heuristic fallback) to distinguish intentional UI patterns (e.g., avatar stacks, badges) from real layout bugs.
 3. **Physics-Based Human Kinematics** (Cubic Bézier mouse trajectories, Fitts's Law velocity profiling, human typing cadence, momentum scrolling).
-4. **Zero-Config & Customizable UAT Engine** (38 declarative actions, `{{VARIABLE}}` interpolation, resilient `fallbackSelectors`, live DOM auto-discovery, and 14 built-in industry templates).
+4. **Zero-Config & Customizable UAT Engine** (48 declarative actions, `{{VARIABLE}}` interpolation, resilient `fallbackSelectors`, live DOM auto-discovery, 14 built-in industry templates, and a visual `shadcn/ui` UAT Studio).
 5. **Enterprise CI/CD Exporters** (Interactive Dark-Mode HTML Dashboards, SARIF 2.1.0 for GitHub Code Scanning, JUnit XML, GitHub PR Markdown, `.webm` video & Playwright `.zip` traces).
 
 ---
@@ -39,10 +39,11 @@ src/
 ├── core/           # Reusable BrowserPool, CaptureRecorder (video/trace/overlays), Concurrent AuditRunner
 ├── agent/          # Fitts's Law Bézier kinematics, human typist, momentum scroller, Faker form filler, crawler
 ├── inspectors/
-│   ├── layout/     # textCollision, horizontalBleed, containerClipping, interactiveOcclusion, unsizedMedia, breakpointSweeper
-│   ├── a11y/       # axeRunner (WCAG 2.2 AA), colorContrast, touchTargets (44x44px), textZoom (200%)
+│   ├── layout/     # textCollision (Sweep-and-Prune + Shadow DOM), horizontalBleed, containerClipping, interactiveOcclusion, unsizedMedia, breakpointSweeper
+│   ├── a11y/       # axeRunner (WCAG 2.2 AA), colorContrast (CSS Color 4 oklch/lab), touchTargets (44x44px), textZoom (200%)
 │   ├── perf/       # clsObserver (PerformanceObserver session windows), lighthouseRunner
-│   └── network/    # linkChecker (empty href & dead #anchor inspector)
+│   ├── network/    # linkChecker (empty href & dead #anchor inspector)
+│   └── web/        # 9 Optional Web-Based Frontend Checks (brokenImagesAndSvg, stickyViewportBudget, darkModeParity, i18nTextExpansion, formErgonomics, fontLoadingHealth, domComplexityBudget, frontendHygiene, reducedMotionCompliance)
 ├── uat/
 │   ├── actions/    # Command/Strategy handlers (navigationAndState, interaction, assertion)
 │   ├── templates/  # Open-Closed registry + 14 built-in workflows (coreTemplates, domainVariants, workflowTemplates)
@@ -51,9 +52,29 @@ src/
 │   ├── generator.ts        # Zero-config live DOM UAT scenario synthesizer
 │   ├── validator.ts        # Pre-flight validator with Levenshtein "Did you mean?" suggestions
 │   └── uatRunner.ts        # Multi-viewport UAT orchestrator
+├── studio/         # Local Full-Stack UAT Studio HTTP/SSE API server (src/studio/server.ts)
+├── studio/ (root)  # React 19 + Vite + Tailwind v4 + shadcn/ui Visual UAT Workflow Manager
 ├── vision/         # Multimodal VLM client (Gemini / Anthropic) + deterministic heuristic fallback
 └── reporter/       # Scoring engine, Audit & UAT HTML dashboards, SARIF 2.1.0, JUnit XML, PR Markdown, JSON
 ```
+
+---
+
+## 🖥️ Visual UAT Workflow Studio (`shadcn/ui` Web App)
+
+Launch the local full-stack **`shadcn/ui` BetterFront Studio** on a single port (`http://localhost:4400`) to visually author, customize, validate, and execute UAT workflows in real time:
+
+```bash
+# Start the local shadcn/ui UAT Studio server with Bun
+bun run studio
+# Or via CLI directly:
+bunx betterfront studio --port 4400
+```
+
+- **App Sidebar + Focused Workspace (`shadcn/ui` `sidebar-07` + TweakCN Theme Engine)**: Collapsible left navigation sidebar with workspace sections, saved project flows explorer, `Ctrl+K` Command Palette, **TweakCN Theme Preset Switcher** (**`Neo-Brutalism`** default with hard `4px` offset shadows, `2px` ink borders & `0px` sharp geometry, plus **`Claude`**, **`Cyberpunk`**, and **`Minimal`** presets), **Daylight / Dark** toggle, and **Comfortable Large Text (`Aa`)** toggle.
+- **Connected Vertical Timeline + Right-Side Step Inspector**: View your user journey as a clean connected step timeline on the left and edit step properties in a sticky right-hand Step Inspector with a searchable `shadcn/ui` `SelectMenu`, 1-click common element chips, and slide-over `Sheet` drawers for device settings and raw JSON.
+- **14 Industry Templates & 21 Quality Checks Matrix**: One-click cloning and variable customization (`Sheet` drawer) for all 14 built-in templates (`dreamblu`, `shopee`, `tokopedia`, `youtube`, `google`, etc.) and interactive `Switch` toggles for all 12 Core Protections and 9 Optional Deep Web Checks.
+- **Executive Release Readiness Reports & Live Telemetry**: Real-time Server-Sent Events (SSE) browser stream drawer, `shadcn/ui` `Progress` health score cards, 1-click **Copy Summary for Slack / Jira**, and embedded `.webm` video & failure screenshot proof.
 
 ---
 
@@ -65,10 +86,10 @@ BetterFront is ready to use **out of the box from the first second**—no manual
 Point BetterFront at any live URL. BetterFront inspects the live DOM, discovers navigation landmarks, headings, interactive controls, and forms, synthesizes a complete UAT scenario, and executes it immediately:
 ```bash
 # Auto-discover & execute UAT directly from any live URL
-npx betterfront uat http://localhost:7777 --save-scenario ./uat-scenarios/auto-discovered.json
+bunx betterfront uat http://localhost:7777 --save-scenario ./uat-scenarios/auto-discovered.json
 
 # Scaffold betterfront.config.json + all 14 customizable workflow templates to disk
-npx betterfront init http://localhost:7777
+bunx betterfront init http://localhost:7777
 ```
 
 ### 2. 14 Built-In Customizable Workflow Templates (Including Major Platform Variants)
@@ -76,17 +97,17 @@ Run any of the **14 built-in templates** directly by ID or alias (`dreamblu`, `s
 
 ```bash
 # List all 14 built-in workflow templates & their customizable variables
-npx betterfront uat --list-templates
+bunx betterfront uat --list-templates
 
 # Run major platform & domain workflow variants out-of-the-box
-npx betterfront uat dreamblu  --url http://localhost:7777
-npx betterfront uat shopee    --url http://localhost:8080/shopee    --var SEARCH_QUERY="wireless earbuds"
-npx betterfront uat tokopedia --url http://localhost:8080/tokopedia --var SEARCH_QUERY="mechanical keyboard"
-npx betterfront uat youtube   --url http://localhost:8080/youtube   --var SEARCH_QUERY="web performance"
-npx betterfront uat google    --url http://localhost:8080/google    --var SEARCH_QUERY="BetterFront QA"
+bunx betterfront uat dreamblu  --url http://localhost:7777
+bunx betterfront uat shopee    --url http://localhost:8080/shopee    --var SEARCH_QUERY="wireless earbuds"
+bunx betterfront uat tokopedia --url http://localhost:8080/tokopedia --var SEARCH_QUERY="mechanical keyboard"
+bunx betterfront uat youtube   --url http://localhost:8080/youtube   --var SEARCH_QUERY="web performance"
+bunx betterfront uat google    --url http://localhost:8080/google    --var SEARCH_QUERY="BetterFront QA"
 
 # Run the 5-Breakpoint Live Responsive Matrix workflow (320px -> 1920px)
-npx betterfront uat responsive-breakpoint-matrix --url http://localhost:7777
+bunx betterfront uat responsive-breakpoint-matrix --url http://localhost:7777
 ```
 
 | Template ID (and Shorthand Alias) | Category | What It Tests Out-of-the-Box |
@@ -163,20 +184,39 @@ try {
 | `consoleExceptions` | `--no-console-errors` | Unhandled JavaScript console exceptions | **ON** |
 | `brokenLinks` | `--no-broken-links` | Empty `href` and dead `#anchor` links | **ON** |
 
+### 🧩 9 Optional Web-Based Frontend Checks (Dual-Mode: Global Toggle + UAT `ASSERT_*` Action)
+
+In addition to the 12 core invariants, BetterFront provides **9 specialized Web-Based Frontend Checks** that can be enabled via `AnomalyToggles`, CLI flags, or individual UAT step assertions:
+
+| Optional Check Key | CLI Flag | UAT Step Action | What It Verifies |
+| :--- | :--- | :--- | :--- |
+| `brokenImagesAndSvg` | `--check-broken-images` | `ASSERT_NO_BROKEN_IMAGES` | Broken `<img>` (`naturalWidth === 0`), collapsed `0x0` `<svg>` icons, and failed CSS background images. |
+| `stickyViewportBudget` | `--check-sticky-budget` | `ASSERT_STICKY_BUDGET` | Ensures sticky/fixed headers, footers & banners consume `<= 25%` of mobile viewport height. |
+| `darkModeParity` | `--check-dark-mode` | `ASSERT_DARK_MODE_PARITY` | Emulates `prefers-color-scheme: dark` and verifies WCAG AA text contrast parity without dark-on-dark text. |
+| `i18nTextExpansion` | `--check-i18n` | `ASSERT_I18N_EXPANSION` | Stress-tests buttons, nav links & badges with `+35%` pseudo-localized text expansion for clipping/overlap. |
+| `formErgonomics` | `--check-forms` | `ASSERT_FORM_ERGONOMICS` | Audits inputs for accessible `<label>`, `autocomplete` tokens, and `>= 16px` mobile font-size (prevents iOS auto-zoom). |
+| `fontLoadingHealth` | `--check-fonts` | `ASSERT_FONT_HEALTH` | Audits `document.fonts` for failed `FontFace` loads and missing `font-display: swap/optional`. |
+| `domComplexityBudget` | `--check-dom-budget` | `ASSERT_DOM_BUDGET` | Enforces total DOM nodes `<= 1,500`, max depth `<= 32`, and flags unvirtualized lists (`> 100` children). |
+| `frontendHygiene` | `--check-hygiene` | `ASSERT_FRONTEND_HYGIENE` | Audits `<title>`, `<meta name="description">`, `<html lang>`, `target="_blank"` `rel="noopener"`, mixed content & storage leaks. |
+| `reducedMotionCompliance` | `--check-reduced-motion` | `ASSERT_REDUCED_MOTION` | Emulates `prefers-reduced-motion: reduce` and flags infinite CSS animations that ignore vestibular safety. |
+
 ---
 
-## 🚀 Quickstart & Commands
+## 🚀 Quickstart & Commands (Bun-Native)
 
 ```bash
-# 1. Install dependencies
-npm install
+# 1. Install dependencies with Bun
+bun install
 
-# 2. Typecheck & build TypeScript to ./dist
-npm run typecheck
-npm run build
+# 2. Typecheck & build TypeScript + shadcn/ui Studio to ./dist
+bun run typecheck
+bun run build
 
-# 3. Run the complete verification suite (Audit, UAT & Multi-Variant Workflows)
-npm test
+# 3. Launch the shadcn/ui UAT Workflow Studio
+bun run studio
+
+# 4. Run the complete verification suite (Audit, UAT, Multi-Variant & Studio/Web Checks)
+bun test
 ```
 
 ---

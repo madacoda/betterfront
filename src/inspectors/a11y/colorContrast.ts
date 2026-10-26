@@ -7,15 +7,37 @@ export async function auditColorContrast(
   defaultMinRatio = 4.5
 ): Promise<{ defects: VisualDefect[]; rawList: LowContrastDefect[] }> {
   const rawList = await page.evaluate((baseMinRatio) => {
+    let colorCanvasCtx: CanvasRenderingContext2D | null = null;
+
     function parseRgba(colorStr: string): [number, number, number, number] | null {
-      if (!colorStr || colorStr === 'transparent') return [0, 0, 0, 0];
+      if (!colorStr || colorStr === 'transparent' || colorStr === 'rgba(0, 0, 0, 0)') return [0, 0, 0, 0];
       const match = colorStr.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*[,/]\s*([0-9.]+))?\s*\)/);
-      if (!match) return null;
-      const r = parseInt(match[1], 10);
-      const g = parseInt(match[2], 10);
-      const b = parseInt(match[3], 10);
-      const a = match[4] !== undefined ? parseFloat(match[4]) : 1;
-      return [r, g, b, isNaN(a) ? 1 : a];
+      if (match) {
+        const r = parseInt(match[1], 10);
+        const g = parseInt(match[2], 10);
+        const b = parseInt(match[3], 10);
+        const a = match[4] !== undefined ? parseFloat(match[4]) : 1;
+        return [r, g, b, isNaN(a) ? 1 : a];
+      }
+      // Fallback for CSS Color Level 4 (oklch, lab, lch, hsl, color(srgb ...), etc.) via 1x1 Canvas rasterization
+      try {
+        if (!colorCanvasCtx) {
+          const canvas = document.createElement('canvas');
+          canvas.width = 1;
+          canvas.height = 1;
+          colorCanvasCtx = canvas.getContext('2d', { willReadFrequently: true });
+        }
+        if (colorCanvasCtx) {
+          colorCanvasCtx.clearRect(0, 0, 1, 1);
+          colorCanvasCtx.fillStyle = colorStr;
+          colorCanvasCtx.fillRect(0, 0, 1, 1);
+          const data = colorCanvasCtx.getImageData(0, 0, 1, 1).data;
+          return [data[0], data[1], data[2], Math.round((data[3] / 255) * 1000) / 1000];
+        }
+      } catch {
+        // Ignore unsupported color syntax
+      }
+      return null;
     }
 
     // Alpha-blend foreground RGBA over opaque RGB background

@@ -32,6 +32,7 @@ import { runLighthouseAudit } from '../inspectors/perf/lighthouseRunner.js';
 import { auditTouchTargets } from '../inspectors/a11y/touchTargets.js';
 import { runTextZoomStressTest } from '../inspectors/a11y/textZoom.js';
 import { runAxeAudit } from '../inspectors/a11y/axeRunner.js';
+import { runOptionalWebChecks } from '../inspectors/web/index.js';
 import { VlmClient } from '../vision/vlmClient.js';
 import { ScoringEngine } from '../reporter/scoring.js';
 import { generateHtmlReport } from '../reporter/html.js';
@@ -417,6 +418,13 @@ export class AuditRunner {
     if (this.config.anomalyChecks.textZoom200Percent) {
       const zoomDefects = await runTextZoomStressTest(page, vp);
       pushUniqueDefects(zoomDefects);
+    }
+
+    // Check 8c: Optional Web-Based Frontend Checks (Broken Images/SVG, Sticky Budget, Dark Mode, i18n +35%, Forms, Fonts, DOM Budget, Hygiene, Reduced Motion)
+    const optionalWebDefects = await runOptionalWebChecks(page, vp, this.config.anomalyChecks);
+    if (optionalWebDefects.length > 0) {
+      pushUniqueDefects(optionalWebDefects);
+      console.log(`   🔍 [${vp.name}] Optional Web Checks: ${optionalWebDefects.length} issue(s) flagged`);
     }
 
     // Check 8b: Fluid Breakpoint Sweeper (mutates viewport size, so run sequentially)

@@ -8,44 +8,57 @@ Every scenario file in this directory is backed by [`uat-scenario.schema.json`](
 
 ## 🚀 Quick Start (Zero-Config to Full Customization)
 
-### 0. Zero-Config Auto-UAT (No Test Authoring Required!)
-Point BetterFront directly at any live URL (such as Dreamblu on `http://localhost:7777` or any web application). BetterFront automatically inspects the live DOM, discovers topbars, brand lockups, HUD widgets, buttons, and forms, synthesizes a complete UAT workflow, and executes it on the spot:
+### 0. Visual UAT Studio (`shadcn/ui` Web App) & Zero-Config Auto-UAT
+Launch the local full-stack **`shadcn/ui` BetterFront Studio** (`http://localhost:4400`) to visually build, validate, and run UAT workflows, or point BetterFront directly at any live URL:
 
 ```bash
+# Launch the interactive shadcn/ui UAT Workflow Studio
+bun run studio
+
 # Run zero-config auto-discovered UAT directly against any URL (and optionally save the generated JSON!)
-npx betterfront uat http://localhost:7777 --save-scenario ./uat-scenarios/my-auto-uat.json
+bunx betterfront uat http://localhost:7777 --save-scenario ./uat-scenarios/my-auto-uat.json
 
 # Or generate a customizable UAT JSON file from a live URL without executing immediately
-npx betterfront uat:generate http://localhost:7777 -o ./uat-scenarios/dreamblu-auto.json
+bunx betterfront uat:generate http://localhost:7777 -o ./uat-scenarios/dreamblu-auto.json
 
-# Or scaffold a full project config + 10 customizable workflow templates in one command
-npx betterfront init http://localhost:7777
+# Or scaffold a full project config + all 14 customizable workflow templates in one command
+bunx betterfront init http://localhost:7777
 ```
 
-### 1. Run Any of the 10 Built-In Customizable Workflow Templates Out-of-the-Box
-You don't need to write tests from scratch—choose from 10 battle-tested workflow templates and override variables on the fly with `--url` and `--var KEY=VALUE`:
+### 1. Run Any of the 14 Built-In Customizable Workflow Templates Out-of-the-Box
+You don't need to write tests from scratch—choose from 14 battle-tested workflow templates and override variables on the fly with `--url` and `--var KEY=VALUE`:
 
 ```bash
-# List all 10 built-in workflow templates and their customizable variables
-npx betterfront uat --list-templates
+# List all 14 built-in workflow templates and their customizable variables
+bunx betterfront uat --list-templates
 
 # Run the RPG / Game HUD workflow (Dreamblu ready!) out of the box
-npx betterfront uat rpg-game-hud --url http://localhost:7777
+bunx betterfront uat rpg-game-hud --url http://localhost:7777
+
+# Run major platform & commerce workflow variants
+bunx betterfront uat shopee    --url http://localhost:8080/shopee    --var SEARCH_QUERY="wireless earbuds"
+bunx betterfront uat tokopedia --url http://localhost:8080/tokopedia --var SEARCH_QUERY="mechanical keyboard"
+bunx betterfront uat youtube   --url http://localhost:8080/youtube   --var SEARCH_QUERY="web performance"
+bunx betterfront uat google    --url http://localhost:8080/google    --var SEARCH_QUERY="BetterFront QA"
 
 # Run the Form Validation & Chaos workflow with custom variable overrides
-npx betterfront uat form-validation-chaos --url http://localhost:8912 --var TEST_EMAIL=hero@dreamblu.io --var TEST_NAME="Aria Vanguard"
+bunx betterfront uat form-validation-chaos --url http://localhost:8912 --var TEST_EMAIL=hero@dreamblu.io --var TEST_NAME="Aria Vanguard"
 
 # Run the 5-Breakpoint Live Responsive Matrix workflow (320px -> 1920px)
-npx betterfront uat responsive-breakpoint-matrix --url http://localhost:7777
+bunx betterfront uat responsive-breakpoint-matrix --url http://localhost:7777
 
 # Run an entire directory of UAT workflows as a unified suite
-npx betterfront uat ./uat-scenarios/templates --url http://localhost:7777
+bunx betterfront uat ./uat-scenarios/templates --url http://localhost:7777
 ```
 
 | Template ID | Category | What It Tests Out-of-the-Box |
 | :--- | :--- | :--- |
 | **`universal-smoke`** | Universal | Landmarks, heading, CTA unoccluded hit-target, human scroll, network health & console hygiene. |
-| **`rpg-game-hud`** / **`dreamblu-rpg-hud`** | Gaming & HUD | RPG topbar (`header.site-topbar`), brand lockup (`a.brand-lockup`), HUD widgets, hover, clipping & bleed. |
+| **`rpg-game-hud`** / **`dreamblu`** | Gaming & HUD | RPG topbar (`header.site-topbar`), brand lockup (`a.brand-lockup`), HUD widgets, hover, clipping & bleed. |
+| **`shopee-marketplace`** / **`shopee`** | E-Commerce & SaaS | Flash-sale header, search bar query, product grid cards, Add-to-Cart action, and mobile bleed invariants. |
+| **`tokopedia-commerce`** / **`tokopedia`** | E-Commerce & SaaS | Sticky search header, category pills, merchant product cards, Keranjang action, and contrast/clipping checks. |
+| **`youtube-media-streaming`** / **`youtube`** | Media & Search | Masthead search query, primary video player container, transport controls, filter chips, and feed cards. |
+| **`google-search-portal`** / **`google`** | Media & Search | Search bar focus, query typing, search action trigger, Keyboard `Tab` ergonomics, and all 12 invariants. |
 | **`form-validation-chaos`** | Forms & Auth | Typing, clear/refill, `FILL_FORM` synthetic Faker data, submit & feedback verification. |
 | **`auth-login-session`** | Forms & Auth | `SET_STORAGE` / `ASSERT_STORAGE` session token seeding, credential typing & login submit. |
 | **`ecommerce-checkout`** | E-Commerce & SaaS | Catalog search, Add-to-Cart CTA, `GUEST_CHECKOUT` form auto-fill & network status check. |
@@ -72,31 +85,31 @@ Add `"$schema": "./uat-scenario.schema.json"` at the very top of any scenario JS
 }
 ```
 
-When you type `"action": ""` inside `steps`, your editor will suggest all 38 available actions with full descriptions and documentation.
+When you type `"action": ""` inside `steps`, your editor will suggest all 48 available actions with full descriptions and documentation.
 
 ### 3. Validating a Scenario Before Execution
 To instantly check if a scenario has any typos, missing selectors, or invalid fields without launching a browser:
 
 ```bash
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --validate-only
+bun src/cli.ts uat ./uat-scenarios/dreamblu-fantasy-uat.json --validate-only
 ```
 
 ### 4. Executing a Scenario & Recording Video
 ```bash
 # Standard headless execution
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json
+bun src/cli.ts uat ./uat-scenarios/dreamblu-fantasy-uat.json
 
 # Record full-motion WebM video and Playwright trace archive of the run
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --video --trace
+bun src/cli.ts uat ./uat-scenarios/dreamblu-fantasy-uat.json --video --trace
 
 # Interactive headed mode (watch the browser live on your screen!)
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed
+bun src/cli.ts uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed
 
 # Slow-motion mode (pauses 300ms between actions for visual debugging)
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed --slowmo 300
+bun src/cli.ts uat ./uat-scenarios/dreamblu-fantasy-uat.json --headed --slowmo 300
 
 # Override viewport (test on Desktop Full HD or Modern Mobile)
-node dist/cli.js uat ./uat-scenarios/dreamblu-fantasy-uat.json --viewport desktop_fhd
+bun src/cli.ts uat ./uat-scenarios/dreamblu-fantasy-uat.json --viewport desktop_fhd
 ```
 
 ### 5. Interactive Live Action Recording (No Manual JSON Writing!)
@@ -104,12 +117,12 @@ Don't want to write JSON by hand? You can record your live clicks, inputs, and n
 
 ```bash
 # Launch interactive browser recorder
-node dist/cli.js record http://localhost:7777 -o ./uat-scenarios/my-recorded-flow.json
+bun src/cli.ts record http://localhost:7777 -o ./uat-scenarios/my-recorded-flow.json
 ```
 
 ---
 
-## 📑 Action Quick-Reference Master Table (38 Actions)
+## 📑 Action Quick-Reference Master Table (48 Actions)
 
 | Action | Required Fields | Optional Fields | Description |
 | :--- | :--- | :--- | :--- |
@@ -135,6 +148,7 @@ node dist/cli.js record http://localhost:7777 -o ./uat-scenarios/my-recorded-flo
 | **`ASSERT_STORAGE`** | `key` | `value`, `storageType`, `exact` | Asserts `localStorage` or `sessionStorage` item exists and matches value. |
 | **`ASSERT_VISIBLE`** | `selector` | `fallbackSelectors`, `timeoutMs` | Asserts element exists and is visually rendered in the viewport. |
 | **`ASSERT_HIDDEN`** | `selector` | `timeoutMs` | Asserts element is hidden or detached (e.g. modal closed, loader gone). |
+| **`ASSERT_NOT_VISIBLE`** | `selector` | `timeoutMs` | Alias for `ASSERT_HIDDEN`. |
 | **`ASSERT_TEXT`** | `selector`, `text` | `exact`, `timeoutMs` | Verifies element text contains expected string (or exact match). |
 | **`ASSERT_VALUE`** | `selector`, `value`/`text`| `timeoutMs` | Verifies input field or select dropdown value matches expected. |
 | **`ASSERT_ATTRIBUTE`** | `selector`, `attribute` | `value`, `exact` | Asserts HTML/ARIA attribute (e.g. `aria-expanded="true"`, `href`) on element. |
@@ -150,8 +164,18 @@ node dist/cli.js record http://localhost:7777 -o ./uat-scenarios/my-recorded-flo
 | **`ASSERT_UNOCCLUDED`** | `selector` | `timeoutMs` | Verifies element is physically reachable via hit-testing without sticky navbar/modal occlusion. |
 | **`ASSERT_NO_CLIPPING`**| *none* | `selector`, `timeoutMs` | Verifies element or page has zero hidden text truncation/starvation (`scrollHeight > clientHeight`). |
 | **`ASSERT_TOUCH_TARGET`**| `selector` | `minPx` (default 44) | Verifies element meets touch target ergonomics ($44\times 44\text{px}$ per Apple HIG / WCAG 2.5.5). |
-| **`ASSERT_CONTRAST`** | `selector` | `minRatio` (default 4.5)| Verifies element text contrast ratio meets WCAG AA standards. |
-| **`ASSERT_ALL_INVARIANTS`** | *none* | *none* | Runs overlap, mobile bleed, container clipping, interactive occlusion, and console checks all at once. |
+| **`ASSERT_CONTRAST`** | `selector` | `minRatio` (default 4.5)| Verifies element text contrast ratio meets WCAG AA standards (including CSS Color 4 `oklch`/`lab`). |
+| **`ASSERT_ALL_INVARIANTS`** | *none* | *none* | Runs overlap, mobile bleed, container clipping, interactive occlusion, and console checks concurrently. |
+| **`ASSERT_NO_BROKEN_IMAGES`** | *none* | *none* | Optional Web Check: Verifies zero broken `<img>` (`naturalWidth === 0`) or collapsed `0x0` `<svg>` icons. |
+| **`ASSERT_STICKY_BUDGET`** | *none* | *none* | Optional Web Check: Verifies fixed/sticky headers & banners consume `<= 25%` of viewport height. |
+| **`ASSERT_DARK_MODE_PARITY`** | *none* | `minRatio` | Optional Web Check: Emulates `prefers-color-scheme: dark` and verifies WCAG AA contrast parity. |
+| **`ASSERT_I18N_EXPANSION`** | *none* | *none* | Optional Web Check: Simulates `+35%` i18n text expansion on buttons/nav/badges and checks for clipping/overlap. |
+| **`ASSERT_FORM_ERGONOMICS`** | *none* | *none* | Optional Web Check: Audits inputs for `<label>`, `autocomplete` tokens, and `>= 16px` mobile font-size. |
+| **`ASSERT_FONT_HEALTH`** | *none* | *none* | Optional Web Check: Inspects `document.fonts` for failed loads or missing `font-display: swap/optional`. |
+| **`ASSERT_DOM_BUDGET`** | *none* | *none* | Optional Web Check: Enforces total DOM nodes `<= 1,500`, max depth `<= 32`, and max children `<= 100`. |
+| **`ASSERT_FRONTEND_HYGIENE`** | *none* | *none* | Optional Web Check: Audits `<title>`, `<meta>`, `<html lang>`, `target="_blank"` `rel="noopener"`, and storage leaks. |
+| **`ASSERT_REDUCED_MOTION`** | *none* | *none* | Optional Web Check: Emulates `prefers-reduced-motion: reduce` and flags infinite CSS animations. |
+| **`ASSERT_A11Y`** | *none* | *none* | Runs WCAG 2.2 AA `axe-core` semantic accessibility verification at the current step. |
 | **`SCREENSHOT`** | *none* | `name`, `fullPage` | Captures high-res screenshot to `betterfront-artifacts/screenshots/`. |
 | **`EXECUTE_SCRIPT`**| `script` | *none* | Evaluates arbitrary JavaScript expression in page context. |
 

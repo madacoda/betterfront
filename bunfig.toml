@@ -1,0 +1,3 @@
+[test]
+# Allow generous timeout for multi-viewport Playwright browser & Lighthouse E2E tests
+timeout = 240000
